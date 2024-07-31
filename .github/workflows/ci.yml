@@ -1,0 +1,10 @@
+on: [push]
+name: build
+jobs:
+  runhaskell:
+    name: Build CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
+      - run: cabal build haskell-mailer
