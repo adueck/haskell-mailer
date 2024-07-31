@@ -1,0 +1,28 @@
+cradle:
+  cabal:
+    - path: "app/Main.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/Types.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/DB.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/Handlers.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/Mailer.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/Views.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/SimpleTemplate.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/FileHelpers.hs"
+      component: "haskell-mailer:exe:haskell-mailer"
+
+    - path: "app/EnvBuddy.hs"
+      component: "haskell-mailer:exe:haskell-mailer"

@@ -1,0 +1,262 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+module DB
+  ( getContacts,
+    getMailings,
+    getContactById,
+    getMailingById,
+    queryContacts,
+    removeContact,
+    removeMailing,
+    addContact,
+    addSend,
+    addMailing,
+    updateContact,
+    updateMailing,
+    setupDB,
+    markMailingPublished,
+    makeDBConnection,
+    setupDB,
+  )
+where
+
+import Control.Monad
+import Data.UUID.Types (UUID)
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.Time
+import EnvBuddy (getAppEnv)
+import Types
+
+toContact :: ContactOutput -> Contact
+toContact (_id, name, email, group, notes) =
+  Contact
+    { contactId = _id,
+      contactName = name,
+      contactEmail = email,
+      contactGroup = group,
+      contactNotes = notes
+    }
+
+toMailing :: MailingOutput -> Mailing
+toMailing (_id, subject, content, created, modified, published) =
+  Mailing
+    { mailingId = _id,
+      mailingSubject = subject,
+      mailingContent = content,
+      mailingDate = created,
+      mailingModified = modified,
+      mailingPublished = published
+    }
+
+type MailingOutput = (UUID, String, String, ZonedTimestamp, ZonedTimestamp, Bool)
+
+type ContactOutput = (UUID, String, String, String, String)
+
+getContacts :: Connection -> IO [Contact]
+getContacts conn = do
+  res <- query_ conn "SELECT * FROM contacts" :: IO [ContactOutput]
+  return $ fmap toContact res
+
+getMailings :: Connection -> IO [Mailing]
+getMailings conn = do
+  res <- query_ conn "SELECT * FROM mailings" :: IO [MailingOutput]
+  return $ fmap toMailing res
+
+getContactById :: Connection -> UUID -> IO (Maybe Contact)
+getContactById conn _id = do
+  x :: [ContactOutput] <-
+    query
+      conn
+      "SELECT * FROM contacts WHERE contact_id = ? "
+      (Only _id :: Only UUID)
+  if null x
+    then return Nothing
+    else return $ Just (toContact $ head x)
+
+getMailingById :: Connection -> UUID -> IO (Maybe Mailing)
+getMailingById conn _id = do
+  x :: [MailingOutput] <-
+    query
+      conn
+      "SELECT * FROM mailings WHERE mailing_id = ? "
+      (Only _id :: Only UUID)
+  if null x
+    then return Nothing
+    else return $ Just (toMailing $ head x)
+
+queryContacts :: Connection -> String -> IO [Contact]
+queryContacts conn qs = do
+  let q = "%" ++ qs ++ "%"
+  x :: [ContactOutput] <-
+    query
+      conn
+      "SELECT * FROM contacts WHERE (name LIKE ? ) OR (email LIKE ? ) OR (contact_group LIKE ? ) or (notes LIKE ? )"
+      (q, q, q, q)
+  return $ fmap toContact x
+
+removeContact :: Connection -> UUID -> IO (Either String ())
+removeContact conn _id = do
+  res <- getContactById conn _id
+  case res of
+    Nothing -> return (Left "Contact not found for deletion")
+    Just _ -> do
+      r <-
+        execute
+          conn
+          "DELETE FROM contacts WHERE contact_id = ? "
+          (Only _id :: Only UUID)
+      return $
+        if r == 1
+          then Right ()
+          else Left "Error deleting contact"
+
+removeMailing :: Connection -> UUID -> IO (Either String ())
+removeMailing conn _id = do
+  res <- getMailingById conn _id
+  case res of
+    Nothing -> return (Left "Mailing not found for deletion")
+    Just _ -> do
+      r <-
+        execute
+          conn
+          "DELETE FROM mailings WHERE mailing_id = ? "
+          (Only _id :: Only UUID)
+      return $
+        if r == 1
+          then Right ()
+          else Left "Error deleting mailing"
+
+addContact :: Connection -> Contact -> IO (Either String ())
+addContact conn contact = do
+  res <- queryContacts conn (contactEmail contact)
+  case res of
+    [] -> do
+      r <- execute conn "INSERT INTO contacts VALUES (default, ?, ?, ?, ?)" (contactName contact, contactEmail contact, contactGroup contact, contactNotes contact)
+      if r == 1
+        then return $ Right ()
+        else return $ Left "Error adding contact"
+    _ -> return $ Left "E-mail contact already exists!"
+
+addMailing :: Connection -> (String, String) -> IO (Either String ())
+addMailing conn (subj, content) = do
+  r <- execute conn "INSERT INTO mailings VALUES (default, ?, ?)" (subj, content)
+  if r == 1
+    then return $ Right ()
+    else return $ Left "Error adding mailing"
+
+addSend :: Connection -> UUID -> Contact -> String -> IO (Either String ())
+addSend conn mailing_id contact err = do
+  r <- execute conn "INSERT INTO sends VALUES (default, ?, ?, ?, ?)" (mailing_id, contactId contact, contactEmail contact, err)
+  if r == 1
+    then return $ Right ()
+    else return $ Left "Error adding send"
+
+updateContact :: Connection -> Contact -> IO (Either String ())
+updateContact conn contact = do
+  res <- getContactById conn (contactId contact)
+  case res of
+    Nothing -> return $ Left "Contact not found!"
+    Just _ -> do
+      r <-
+        execute
+          conn
+          "UPDATE contacts SET name = ?, email = ?, contact_group = ?, notes = ? \
+          \ WHERE contact_id = ?"
+          (contactName contact, contactEmail contact, contactGroup contact, contactNotes contact, contactId contact)
+      if r == 1
+        then return $ Right ()
+        else return $ Left "Error updating contact"
+
+markMailingPublished :: Connection -> UUID -> IO (Either String ())
+markMailingPublished conn _id = do
+  r <-
+    execute
+      conn
+      "UPDATE mailings SET published = ? WHERE mailing_id = ?"
+      (True, _id)
+  if r == 1
+    then return $ Right ()
+    else return $ Left "Error marking mailing published"
+
+updateMailing :: Connection -> (UUID, String, String) -> IO (Either String ())
+updateMailing conn (_id, subject, content) = do
+  res <- getMailingById conn _id
+  case res of
+    Nothing -> return $ Left "Mailing not found!"
+    Just _ -> do
+      r <-
+        execute
+          conn
+          "UPDATE mailings SET subject = ?, content = ?, updated_on = CURRENT_TIMESTAMP \
+          \ WHERE mailing_id = ?"
+          (subject, content, _id)
+      if r == 1
+        then return $ Right ()
+        else return $ Left "Error updating mailing"
+
+localPG :: IO ConnectInfo
+localPG = do
+  env <- getAppEnv
+  return
+    defaultConnectInfo
+      { connectDatabase = dbEnv env,
+        connectHost = dbHostEnv env,
+        connectPassword = dbPasswordEnv env
+      }
+
+makeDBConnection :: IO Connection
+makeDBConnection = do
+  conn <- localPG >>= connect
+  DB.setupDB conn
+  return conn
+
+setupDB :: Connection -> IO ()
+setupDB conn = do
+  a :: [(String, String)] <-
+    query
+      conn
+      "SELECT schemaname, tablename FROM \
+      \ pg_tables WHERE tablename = ?"
+      (Only "contacts" :: Only String)
+  when (null a) $ do
+    _ <-
+      execute
+        conn
+        "CREATE TABLE IF NOT EXISTS contacts \
+        \ ( contact_id uuid DEFAULT gen_random_uuid() PRIMARY KEY, name VARCHAR(100) NOT NULL, \
+        \ email VARCHAR(100) NOT NULL, contact_group VARCHAR(100) NOT NULL, notes TEXT NOT NULL );"
+        ()
+    return ()
+  b :: [(String, String)] <-
+    query
+      conn
+      "SELECT schemaname, tablename FROM \
+      \ pg_tables WHERE tablename = ?"
+      (Only "mailings" :: Only String)
+  when (null b) $ do
+    _ <-
+      execute
+        conn
+        "CREATE TABLE IF NOT EXISTS mailings \
+        \ ( mailing_id uuid DEFAULT gen_random_uuid() PRIMARY KEY, subject VARCHAR(100) NOT NULL, \
+        \ content TEXT NOT NULL, created_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, \
+        \ updated_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, published BOOLEAN NOT NULL DEFAULT false );"
+        ()
+    return ()
+  c :: [(String, String)] <-
+    query
+      conn
+      "SELECT schemaname, tablename FROM \
+      \ pg_tables WHERE tablename = ?"
+      (Only "sends" :: Only String)
+  when (null c) $ do
+    _ <-
+      execute
+        conn
+        "CREATE TABLE IF NOT EXISTS sends \
+        \ ( send_id uuid DEFAULT gen_random_uuid() PRIMARY KEY, mailing_id uuid, contact_id uuid, \
+        \ email VARCHAR(100), send_error TEXT, sent_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, \
+        \ CONSTRAINT fk_mailing FOREIGN KEY (mailing_id) REFERENCES mailings(mailing_id) ON DELETE CASCADE, \
+        \ CONSTRAINT fk_contact FOREIGN KEY (contact_id) REFERENCES contacts(contact_id) ON DELETE CASCADE)"
+        ()
+    return ()
