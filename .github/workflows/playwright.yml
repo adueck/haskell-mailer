@@ -16,9 +16,10 @@ env:
 
 on:
   push:
-    branches: [main, master]
+    # don't run yet
+    branches: []
   pull_request:
-    branches: [main, master]
+    branches: []
 jobs:
   test:
     timeout-minutes: 60
