@@ -1,6 +1,6 @@
 # haskell-mailer
 
-![E2E Testing](https://github.com/adueck/haskell-mailer/actions/workflows/playwright.yml/badge.svg)
+![E2E Testing](https://github.com/adueck/haskell-mailer/actions/workflows/ci.yml/badge.svg)
 
 A simple personal newsletter mailing app.
 

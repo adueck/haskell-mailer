@@ -71,10 +71,6 @@ test("add/update contacts", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole("cell", { name: "friends" })).not.toBeVisible();
   await expect(page.getByRole("cell", { name: "cool guy" })).toBeVisible();
-  await page
-    .getByRole("row", { name: "Frank Jones frank@example.ca" })
-    .getByRole("button")
-    .click();
 });
 
 // test("create and send mailing", async ({ page }) => {
