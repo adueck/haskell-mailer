@@ -14,7 +14,7 @@ jobs:
         run: |
           cabal configure --enable-tests --enable-benchmarks --disable-documentation
           cabal build all --dry-run
-        run: echo "SHOWING WHERE CABAL-STORE IS"
+          echo "SHOWING WHERE CABAL-STORE IS"
           echo ${{ steps.setup.outputs.cabal-store }}
       - name: Restore cached dependencies
         uses: actions/cache/restore@v4
