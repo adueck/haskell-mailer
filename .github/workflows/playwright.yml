@@ -15,11 +15,11 @@ env:
   MYMAILER_DB_PASSWORD: postgres
 
 on:
-  push:
-    # don't run yet
-    branches: []
-  pull_request:
-    branches: []
+#  push:
+# don't run yet
+#    branches: [main]
+#  pull_request:
+#    branches: [main]
 jobs:
   test:
     timeout-minutes: 60
