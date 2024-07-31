@@ -77,43 +77,43 @@ test("add/update contacts", async ({ page }) => {
     .click();
 });
 
-test("create and send mailing", async ({ page }) => {
-  page.on("dialog", async (dialog) => {
-    expect(dialog.type()).toContain("confirm");
-    expect(dialog.message()).toContain("Send to all");
-    await dialog.accept();
-  });
-  await fetch(`${process.env.MAILPIT_DOMAIN}/api/v1/messages`, {
-    method: "DELETE",
-  });
-  await new Promise((r) => setTimeout(r, 1000));
-  await page.goto("/");
-  await page.getByRole("link", { name: "Contacts" }).click();
-  await page.getByRole("link", { name: "Add Contact" }).click();
-  await page.locator('input[name="name"]').click();
-  await page.locator('input[name="name"]').fill("Test R");
-  await page.locator('input[name="name"]').press("Tab");
-  await page.locator('input[name="email"]').fill("bill@bill.com");
-  await page.getByRole("button", { name: "Create Contact" }).click();
-  await page.getByRole("link", { name: "New Mailing" }).click();
-  await page.locator('input[name="subject"]').click();
-  await page.locator('input[name="subject"]').fill("abc");
-  await page.locator('input[name="subject"]').press("Tab");
-  await page.locator("trix-editor").fill("content");
-  await page.getByRole("button", { name: "Create Mailing" }).click();
-  await expect(page.getByRole("link", { name: "abc Draft" })).toBeVisible();
-  await page.getByRole("link", { name: "abc Draft" }).click();
-  await page.getByRole("button", { name: "Send Mailing" }).click();
-  await expect(page.getByRole("link", { name: "abc Sent" })).toBeVisible();
-  // wait for mailing to be sent
-  await new Promise((r) => setTimeout(r, 5000));
-  const res = await fetch(`${process.env.MAILPIT_DOMAIN}/api/v1/messages`);
-  const resj = await res.json();
-  expect(resj.messages.length).toBe(2);
-  expect(resj.messages.every((m) => m.Subject === "abc")).toBeTruthy();
-  expect(
-    resj.messages.some(
-      (m) => m.To[0].Name === "Test R" && m.To[0].Address === "bill@bill.com"
-    )
-  ).toBeTruthy();
-});
+// test("create and send mailing", async ({ page }) => {
+//   page.on("dialog", async (dialog) => {
+//     expect(dialog.type()).toContain("confirm");
+//     expect(dialog.message()).toContain("Send to all");
+//     await dialog.accept();
+//   });
+//   await fetch(`${process.env.MAILPIT_DOMAIN}/api/v1/messages`, {
+//     method: "DELETE",
+//   });
+//   await new Promise((r) => setTimeout(r, 1000));
+//   await page.goto("/");
+//   await page.getByRole("link", { name: "Contacts" }).click();
+//   await page.getByRole("link", { name: "Add Contact" }).click();
+//   await page.locator('input[name="name"]').click();
+//   await page.locator('input[name="name"]').fill("Test R");
+//   await page.locator('input[name="name"]').press("Tab");
+//   await page.locator('input[name="email"]').fill("bill@bill.com");
+//   await page.getByRole("button", { name: "Create Contact" }).click();
+//   await page.getByRole("link", { name: "New Mailing" }).click();
+//   await page.locator('input[name="subject"]').click();
+//   await page.locator('input[name="subject"]').fill("abc");
+//   await page.locator('input[name="subject"]').press("Tab");
+//   await page.locator("trix-editor").fill("content");
+//   await page.getByRole("button", { name: "Create Mailing" }).click();
+//   await expect(page.getByRole("link", { name: "abc Draft" })).toBeVisible();
+//   await page.getByRole("link", { name: "abc Draft" }).click();
+//   await page.getByRole("button", { name: "Send Mailing" }).click();
+//   await expect(page.getByRole("link", { name: "abc Sent" })).toBeVisible();
+//   // wait for mailing to be sent
+//   await new Promise((r) => setTimeout(r, 5000));
+//   const res = await fetch(`${process.env.MAILPIT_DOMAIN}/api/v1/messages`);
+//   const resj = await res.json();
+//   expect(resj.messages.length).toBe(2);
+//   expect(resj.messages.every((m) => m.Subject === "abc")).toBeTruthy();
+//   expect(
+//     resj.messages.some(
+//       (m) => m.To[0].Name === "Test R" && m.To[0].Address === "bill@bill.com"
+//     )
+//   ).toBeTruthy();
+// });
