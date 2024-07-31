@@ -15,7 +15,7 @@ module Views
   )
 where
 
-import Control.Monad (unless, when)
+import Control.Monad (unless)
 import Data.UUID.Types (UUID, nil)
 import Text.Blaze.Html (dataAttribute, stringValue)
 import Text.Blaze.Html.Renderer.Text
@@ -207,22 +207,25 @@ mailingForm _id (subj, content, published) actionPath buttonText = do
       H.button "Delete" H.! A.type_ "submit" H.! A.class_ "btn btn-danger btn-sm"
 
 contactForm :: Contact -> String -> String -> H.Html
-contactForm contact actionPath buttonText =
-  H.form H.! A.class_ "row g-3" H.! A.method "post" H.! A.action (stringValue actionPath) $ do
-    H.div H.! A.class_ "col-md-6" $ do
-      H.label "Name:" H.! A.for "name"
-      H.input H.! A.class_ "form-control" H.! A.type_ "text" H.! A.name "name" H.! A.value (stringValue (contactName contact))
-    H.div H.! A.class_ "col-md-6" $ do
-      H.label "E-mail:" H.! A.for "email"
-      H.input H.! A.class_ "form-control" H.! A.type_ "e-mail" H.! A.name "email" H.! A.value (stringValue (contactEmail contact))
-    H.div H.! A.class_ "col-md-6" $ do
-      H.label "Group:" H.! A.for "group"
-      H.input H.! A.class_ "form-control" H.! A.type_ "text" H.! A.name "group" H.! A.value (stringValue (contactGroup contact))
-    H.div H.! A.class_ "col-md-6" $ do
-      H.label "Notes:" H.! A.for "notes"
-      H.input H.! A.class_ "form-control" H.! A.type_ "text" H.! A.name "notes" H.! A.value (stringValue (contactNotes contact))
-    H.div H.! A.class_ "col-12" $ do
-      H.button (H.toHtml buttonText) H.! A.type_ "submit" H.! A.class_ "btn btn-primary"
+contactForm contact actionPath buttonText = do
+  H.div H.! A.style "max-width: 800px;" $ do
+    H.form H.! A.class_ "row g-3" H.! A.method "post" $ do
+      H.div H.! A.class_ "col-md-6" $ do
+        H.label "Name:" H.! A.for "name"
+        H.input H.! A.class_ "form-control" H.! A.type_ "text" H.! A.name "name" H.! A.value (stringValue (contactName contact))
+      H.div H.! A.class_ "col-md-6" $ do
+        H.label "E-mail:" H.! A.for "email"
+        H.input H.! A.class_ "form-control" H.! A.type_ "e-mail" H.! A.name "email" H.! A.value (stringValue (contactEmail contact))
+      H.div H.! A.class_ "col-md-6" $ do
+        H.label "Group:" H.! A.for "group"
+        H.input H.! A.class_ "form-control" H.! A.type_ "text" H.! A.name "group" H.! A.value (stringValue (contactGroup contact))
+      H.div H.! A.class_ "col-md-6" $ do
+        H.label "Notes:" H.! A.for "notes"
+        H.input H.! A.class_ "form-control" H.! A.type_ "text" H.! A.name "notes" H.! A.value (stringValue (contactNotes contact))
+      H.div H.! A.class_ "d-flex flex-row justify-content-between mt-4" $ do
+        H.button (H.toHtml buttonText) H.! A.type_ "submit" H.! A.formaction (stringValue actionPath) H.! A.class_ "btn btn-secondary"
+    H.form H.! A.class_ "d-flex flex-row-reverse" H.! A.onsubmit "return confirm('Delete contact?');" H.! A.method "POST" H.! A.action (stringValue ("/contact/delete/" ++ show (contactId contact))) $ do
+      H.button "Delete Contact" H.! A.type_ "submit" H.! A.formaction (stringValue ("/contact/delete/" ++ show (contactId contact))) H.! A.class_ "btn btn-danger"
 
 searchBar :: String -> H.Html
 searchBar value = H.form H.! A.class_ "form-inline float-right mr-2 ml-3" H.! A.method "GET" $ do
@@ -238,7 +241,6 @@ contactsTable contacts = H.table H.! A.class_ "table" $ do
     H.th "Email" H.! A.scope "col"
     H.th "Group" H.! A.scope "col"
     H.th "Notes" H.! A.scope "col"
-    H.th ""
   mapM_
     ( \(Contact _id contactName contactEmail contactGroup contactNotes) ->
         H.tr $ do
@@ -248,8 +250,5 @@ contactsTable contacts = H.table H.! A.class_ "table" $ do
           H.td $ H.toHtml contactEmail
           H.td $ H.toHtml contactGroup
           H.td $ H.toHtml contactNotes
-          H.td $ do
-            H.form H.! A.method "POST" H.! A.action (stringValue ("/contact/delete/" ++ show _id)) $ do
-              H.button "Delete" H.! A.type_ "submit" H.! A.class_ "btn btn-danger btn-sm"
     )
     contacts

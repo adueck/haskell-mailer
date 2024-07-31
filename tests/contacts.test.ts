@@ -9,68 +9,66 @@ test("has title", async ({ page }) => {
 
 test.describe.configure({ mode: "serial" });
 
-test("add/update contacts", async ({ page }) => {
+test("add/update/delete contacts", async ({ page }) => {
+  page.on("dialog", async (dialog) => {
+    expect(dialog.type()).toContain("confirm");
+    expect(dialog.message()).toContain("Delete contact?");
+    await dialog.accept();
+  });
   await page.goto("/");
   await page.getByRole("link", { name: "Contacts" }).click();
   await page.getByRole("link", { name: "Add Contact" }).click();
   await page.locator('input[name="name"]').click();
-  await page.locator('input[name="name"]').fill("Bill Smith");
+  await page.locator('input[name="name"]').fill("Bill Joe");
   await page.locator('input[name="name"]').press("Tab");
-  await page.locator('input[name="email"]').fill("bill@example.com");
+  await page.locator('input[name="email"]').fill("bill@joe.com");
   await page.locator('input[name="email"]').press("Tab");
   await page.locator('input[name="group"]').fill("friends");
   await page.locator('input[name="group"]').press("Tab");
-  await page.locator('input[name="notes"]').fill("nice guy");
+  await page.locator('input[name="notes"]').fill("His name is bill");
   await page.getByRole("button", { name: "Create Contact" }).click();
-  await expect(page.getByRole("cell", { name: "Bill Smith" })).toBeVisible();
-  await expect(
-    page.getByRole("cell", { name: "bill@example.com" })
-  ).toBeVisible();
-  await expect(page.getByRole("cell", { name: "friends" })).toBeVisible();
-  await expect(page.getByRole("cell", { name: "nice guy" })).toBeVisible();
   await page.getByRole("link", { name: "Add Contact" }).click();
   await page.locator('input[name="name"]').click();
-  await page.locator('input[name="name"]').fill("Frank Jones");
+  await page.locator('input[name="name"]').fill("Frank Smith");
   await page.locator('input[name="name"]').press("Tab");
-  await page.locator('input[name="email"]').fill("frank@example.ca");
+  await page.locator('input[name="email"]').fill("frank@smith.com");
   await page.locator('input[name="email"]').press("Tab");
+  await page.locator('input[name="group"]').fill("abc");
   await page.locator('input[name="group"]').press("Enter");
-  await expect(page.getByRole("cell", { name: "Frank Jones" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Bill Joe" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "bill@joe.com" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "friends" })).toBeVisible();
   await expect(
-    page.getByRole("cell", { name: "frank@example.ca" })
+    page.getByRole("cell", { name: "His name is bill" })
   ).toBeVisible();
+  await expect(page.getByRole("cell", { name: "abc" })).toBeVisible();
   await expect(
-    page
-      .getByRole("row", { name: "Frank Jones frank@example.ca" })
-      .getByRole("button")
+    page.getByRole("cell", { name: "frank@smith.com" })
   ).toBeVisible();
-  await page.getByRole("link", { name: "Bill Smith" }).click();
+  await expect(page.getByRole("cell", { name: "Frank Smith" })).toBeVisible();
+  await page.getByRole("link", { name: "Frank Smith" }).click();
+  await page.getByRole("button", { name: "Delete Contact" }).click();
+  await expect(
+    page.getByRole("cell", { name: "Frank Smith" })
+  ).not.toBeVisible();
+  await page.getByRole("link", { name: "Bill Joe" }).click();
   await page.locator('input[name="name"]').click();
-  await page.locator('input[name="name"]').click();
-  await page.locator('input[name="name"]').press("ArrowLeft");
-  await page.locator('input[name="name"]').press("ArrowLeft");
-  await page.locator('input[name="name"]').press("ArrowLeft");
-  await page.locator('input[name="name"]').press("ArrowLeft");
-  await page.locator('input[name="name"]').press("ArrowLeft");
-  await page.locator('input[name="name"]').fill("Bill W. Smith");
+  await page.locator('input[name="name"]').fill("Bill Jim");
   await page.locator('input[name="email"]').click();
-  await page.locator('input[name="email"]').fill("bill@example.org");
-  await page.locator('input[name="notes"]').click();
-  await page.locator('input[name="notes"]').click();
-  await page.locator('input[name="notes"]').press("ArrowLeft");
-  await page.locator('input[name="notes"]').press("ArrowLeft");
-  await page.locator('input[name="notes"]').press("ArrowLeft");
-  await page.locator('input[name="notes"]').press("ArrowLeft");
-  await page.locator('input[name="notes"]').fill("cool guy");
+  await page.locator('input[name="email"]').fill("bill@jim.com");
   await page.locator('input[name="group"]').click();
   await page.locator('input[name="group"]').fill("");
+  await page.locator('input[name="notes"]').click();
+  await page.locator('input[name="notes"]').fill("His name was bill");
   await page.getByRole("button", { name: "Edit Contact" }).click();
-  await expect(page.getByRole("cell", { name: "Bill W. Smith" })).toBeVisible();
-  await expect(
-    page.getByRole("cell", { name: "bill@example.org" })
-  ).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Bill Joe" })).not.toBeVisible();
   await expect(page.getByRole("cell", { name: "friends" })).not.toBeVisible();
-  await expect(page.getByRole("cell", { name: "cool guy" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Bill Jim" })).toBeVisible();
+  await page.getByRole("cell", { name: "bill@jim.com" }).click();
+  await page.getByRole("cell", { name: "His name was bill" }).click();
+  await page.getByRole("link", { name: "Bill Jim" }).click();
+  await page.getByRole("button", { name: "Delete Contact" }).click();
+  await expect(page.getByRole("cell", { name: "Bill Jim" })).not.toBeVisible();
 });
 
 // test("create and send mailing", async ({ page }) => {

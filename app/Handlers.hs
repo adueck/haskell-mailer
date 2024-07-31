@@ -244,14 +244,16 @@ handleUnsubscribe conn = do
         _ -> unsubscribeErrorPage
     _ -> unsubscribeErrorPage
 
-handleSelfUpdate :: Connection -> ActionM ()
-handleSelfUpdate conn = do
-  ps <- formParams
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
-    (Just _id) -> do
-      json $ object ["ok" .= True]
-    _ -> json $ object ["ok" .= False]
+handleSelfUpdate :: ActionM ()
+handleSelfUpdate = do
+  json $ object ["ok" .= True]
+
+-- ps <- formParams
+-- _idS :: String <- pathParam "_id"
+-- case fromString _idS of
+-- (Just _id) -> do
+--   json $ object ["ok" .= True]
+-- _ -> json $ object ["ok" .= False]
 
 destroyMailing :: Connection -> ActionM ()
 destroyMailing conn = do
