@@ -1,9 +1,38 @@
+name: E2E Testing
+
+env:
+  MYMAILER_URL: http://localhost:8080
+  MYMAILER_SENDER: example@example.com
+  # mailtrap SMTP info for testing
+  MYMAILER_DOMAIN: ${{ secrets.MYMAILER_DOMAIN }}
+  MYMAILER_LOGIN: ${{ secrets.MYMAILER_LOGIN }}
+  MYMAILER_PASSWORD: ${{ secrets.MYMAILER_PASSWORD }}
+  MYMAILER_PORT: ${{ secrets.MYMAILER_PORT }}
+  MAILPIT_DOMAIN: ${{ secrets.MAILPIT_DOMAIN }}
+  MYMAILER_ADMIN_EMAIL: example@example.com
+  MYMAILER_DB: postgres
+  MYMAILER_DB_HOST: localhost
+  MYMAILER_DB_PASSWORD: postgres
+
 on: [push]
-name: build
 jobs:
   runhaskell:
     name: Build CI
     runs-on: ubuntu-latest
+    # postgres DB for testing
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v4
       - uses: haskell-actions/setup@v2
