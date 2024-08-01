@@ -4,6 +4,7 @@ env:
   MYMAILER_DB: postgres
   MYMAILER_DB_HOST: localhost
   MYMAILER_DB_PASSWORD: postgres
+  DEBUG: pw:webserver
 
 on: [push]
 jobs:

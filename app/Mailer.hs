@@ -39,10 +39,10 @@ makeSender :: IO (Mail -> IO ())
 makeSender = do
   env <- getAppEnv
   return $
-    if not (null (domainEnv env) && null (loginEnv env))
-      then sendMailWithLoginTLS' (domainEnv env) (read (portEnv env)) (loginEnv env) (passwordEnv env)
+    if null (domainEnv env)
       -- if no SMTP provided, use local mailpit for testing
-      else sendMail' "localhost" 1025
+      then sendMail' "localhost" 1025
+      else sendMailWithLoginTLS' (domainEnv env) (read (portEnv env)) (loginEnv env) (passwordEnv env)
 
 makeTextMail :: String -> String -> String -> String -> Mail
 makeTextMail from to subject content =
