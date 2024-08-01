@@ -77,6 +77,12 @@ test("create and send mailing", async ({ page }) => {
   await fetch(`http://localhost:8025/api/v1/messages`, {
     method: "DELETE",
   });
+  await new Promise((r) => setTimeout(r, 1000));
+  // check to make sure that the mailpit api is worknig
+  const res = await fetch(`http://localhost:8025/api/v1/messages`);
+  const resj = await res.json();
+  expect(resj.messages.length).toBe(0);
+  expect(resj.total).toBe(0);
   page.on("dialog", async (dialog) => {
     expect(dialog.type()).toContain("confirm");
     expect(dialog.message()).toContain("Send to all contacts?");
