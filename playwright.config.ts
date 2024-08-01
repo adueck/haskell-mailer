@@ -89,6 +89,7 @@ export default defineConfig({
       url: "http://127.0.0.1:8080",
       reuseExistingServer: true,
       stdout: "pipe",
+      stderr: "pipe",
     },
     {
       command: "mailpit",
@@ -96,6 +97,7 @@ export default defineConfig({
       // for CI, will use mailpit docker service
       reuseExistingServer: true,
       stdout: "pipe",
+      stderr: "pipe",
     },
   ],
 });
