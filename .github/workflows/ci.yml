@@ -1,10 +1,6 @@
 name: E2E Testing
 
 env:
-  MYMAILER_URL: http://localhost:8080
-  MYMAILER_SENDER: example@example.com
-  # mailtrap SMTP info for testing
-  MYMAILER_ADMIN_EMAIL: example@example.com
   MYMAILER_DB: postgres
   MYMAILER_DB_HOST: localhost
   MYMAILER_DB_PASSWORD: postgres

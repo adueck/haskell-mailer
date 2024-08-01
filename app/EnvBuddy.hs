@@ -28,7 +28,7 @@ getAppEnv = do
         portEnv = fromMaybe "465" portR,
         loginEnv = fromMaybe "" loginNameR,
         passwordEnv = fromMaybe "" passwordR,
-        dbEnv = fromMaybe "" dbR,
-        dbHostEnv = fromMaybe "" dbHostR,
-        dbPasswordEnv = fromMaybe "" dbPasswordR
+        dbEnv = fromMaybe "postgres" dbR,
+        dbHostEnv = fromMaybe "localhost" dbHostR,
+        dbPasswordEnv = fromMaybe "postgres" dbPasswordR
       }
