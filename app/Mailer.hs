@@ -38,7 +38,11 @@ sendAdminMail subj body = do
 makeSender :: IO (Mail -> IO ())
 makeSender = do
   env <- getAppEnv
-  return $ sendMailWithLoginTLS' (domainEnv env) (read (portEnv env)) (loginEnv env) (passwordEnv env)
+  return $
+    if not (null (domainEnv env) && null (loginEnv env))
+      then sendMailWithLoginTLS' (domainEnv env) (read (portEnv env)) (loginEnv env) (passwordEnv env)
+      -- if no SMTP provided, use local mailpit for testing
+      else sendMail' "localhost" 1025
 
 makeTextMail :: String -> String -> String -> String -> Mail
 makeTextMail from to subject content =

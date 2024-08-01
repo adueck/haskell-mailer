@@ -83,10 +83,19 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: "cabal run clean-db && cabal run haskell-mailer",
-    url: "http://127.0.0.1:8080",
-    reuseExistingServer: true,
-    stdout: "pipe",
-  },
+  webServer: [
+    {
+      command: "cabal run clean-db && cabal run haskell-mailer",
+      url: "http://127.0.0.1:8080",
+      reuseExistingServer: true,
+      stdout: "pipe",
+    },
+    {
+      command: "mailpit",
+      url: "http://127.0.0.1:8025",
+      // for CI, will use mailpit docker service
+      reuseExistingServer: true,
+      stdout: "pipe",
+    },
+  ],
 });

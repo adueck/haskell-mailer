@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { execSync } from "node:child_process";
 
 test("has title", async ({ page }) => {
   await page.goto("/");
@@ -71,43 +72,55 @@ test("add/update/delete contacts", async ({ page }) => {
   await expect(page.getByRole("cell", { name: "Bill Jim" })).not.toBeVisible();
 });
 
-// test("create and send mailing", async ({ page }) => {
-//   page.on("dialog", async (dialog) => {
-//     expect(dialog.type()).toContain("confirm");
-//     expect(dialog.message()).toContain("Send to all");
-//     await dialog.accept();
-//   });
-//   await fetch(`${process.env.MAILPIT_DOMAIN}/api/v1/messages`, {
-//     method: "DELETE",
-//   });
-//   await new Promise((r) => setTimeout(r, 1000));
-//   await page.goto("/");
-//   await page.getByRole("link", { name: "Contacts" }).click();
-//   await page.getByRole("link", { name: "Add Contact" }).click();
-//   await page.locator('input[name="name"]').click();
-//   await page.locator('input[name="name"]').fill("Test R");
-//   await page.locator('input[name="name"]').press("Tab");
-//   await page.locator('input[name="email"]').fill("bill@bill.com");
-//   await page.getByRole("button", { name: "Create Contact" }).click();
-//   await page.getByRole("link", { name: "New Mailing" }).click();
-//   await page.locator('input[name="subject"]').click();
-//   await page.locator('input[name="subject"]').fill("abc");
-//   await page.locator('input[name="subject"]').press("Tab");
-//   await page.locator("trix-editor").fill("content");
-//   await page.getByRole("button", { name: "Create Mailing" }).click();
-//   await expect(page.getByRole("link", { name: "abc Draft" })).toBeVisible();
-//   await page.getByRole("link", { name: "abc Draft" }).click();
-//   await page.getByRole("button", { name: "Send Mailing" }).click();
-//   await expect(page.getByRole("link", { name: "abc Sent" })).toBeVisible();
-//   // wait for mailing to be sent
-//   await new Promise((r) => setTimeout(r, 5000));
-//   const res = await fetch(`${process.env.MAILPIT_DOMAIN}/api/v1/messages`);
-//   const resj = await res.json();
-//   expect(resj.messages.length).toBe(2);
-//   expect(resj.messages.every((m) => m.Subject === "abc")).toBeTruthy();
-//   expect(
-//     resj.messages.some(
-//       (m) => m.To[0].Name === "Test R" && m.To[0].Address === "bill@bill.com"
-//     )
-//   ).toBeTruthy();
-// });
+test("create and send mailing", async ({ page }) => {
+  execSync("cabal run clean-db");
+  await fetch(`http://localhost:8025/api/v1/messages`, {
+    method: "DELETE",
+  });
+  page.on("dialog", async (dialog) => {
+    expect(dialog.type()).toContain("confirm");
+    expect(dialog.message()).toContain("Send to all contacts?");
+    await dialog.accept();
+  });
+  await page.goto("/");
+  await page.getByRole("link", { name: "Contacts" }).click();
+  await page.getByRole("link", { name: "Add Contact" }).click();
+  await page.locator('input[name="name"]').click();
+  await page.locator('input[name="name"]').fill("bill smith");
+  await page.locator('input[name="name"]').press("Tab");
+  await page.locator('input[name="email"]').fill("bill@example.com");
+  await page.locator('input[name="email"]').press("Enter");
+  await page.getByRole("link", { name: "Add Contact" }).click();
+  await page.locator('input[name="name"]').click();
+  await page.locator('input[name="name"]').fill("Frank Jones");
+  await page.locator('input[name="name"]').press("Tab");
+  await page.locator('input[name="email"]').fill("frank@example.ca");
+  await page.locator('input[name="email"]').press("Enter");
+  await page.getByRole("link", { name: "New Mailing" }).click();
+  await page.locator('input[name="subject"]').click();
+  await page.locator('input[name="subject"]').fill("Test Mailing");
+  await page.locator('input[name="subject"]').press("Tab");
+  await page.locator("trix-editor").fill("mailing content here\n\n");
+  await page.getByRole("button", { name: "Create Mailing" }).click();
+  await page.getByRole("link", { name: "Test Mailing Draft" }).click();
+  await page.getByRole("button", { name: "Send Mailing" }).click();
+  await expect(
+    page.getByRole("link", { name: "Test Mailing Sent" })
+  ).toBeVisible();
+  // allow time for sends
+  await new Promise((r) => setTimeout(r, 3000));
+  const res = await fetch(`http://localhost:8025/api/v1/messages`);
+  const resj = await res.json();
+  expect(resj.messages.length).toBe(2);
+  expect(resj.messages.every((m) => m.Subject === "Test Mailing")).toBeTruthy();
+  expect(
+    resj.messages.some(
+      (m) =>
+        m.To[0].Name === "bill smith" && m.To[0].Address === "bill@example.com"
+    )
+  ).toBeTruthy();
+  execSync("cabal run clean-db");
+  await fetch(`http://localhost:8025/api/v1/messages`, {
+    method: "DELETE",
+  });
+});

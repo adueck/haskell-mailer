@@ -3,7 +3,7 @@ import { execSync } from "node:child_process";
 
 setup("create new database", async ({}) => {
   execSync("cabal run clean-db");
-  await fetch(`${process.env.MAILPIT_DOMAIN}/api/v1/messages`, {
+  await fetch(`localhost:8025/api/v1/messages`, {
     method: "DELETE",
   });
 });

@@ -21,9 +21,9 @@ getAppEnv = do
   dbPasswordR <- lookupEnv "MYMAILER_DB_PASSWORD"
   return
     AppEnv
-      { urlEnv = fromMaybe "" urlR,
-        senderEnv = fromMaybe "" senderEmailR,
-        adminEmailEnv = fromMaybe "" adminEmailR,
+      { urlEnv = fromMaybe "http://localhost:8080" urlR,
+        senderEnv = fromMaybe "sender@example.com" senderEmailR,
+        adminEmailEnv = fromMaybe "admin@example.com" adminEmailR,
         domainEnv = fromMaybe "" domainR,
         portEnv = fromMaybe "465" portR,
         loginEnv = fromMaybe "" loginNameR,
