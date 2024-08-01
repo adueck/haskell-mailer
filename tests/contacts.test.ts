@@ -114,19 +114,21 @@ test("create and send mailing", async ({ page }) => {
     page.getByRole("link", { name: "Test Mailing Sent" })
   ).toBeVisible();
   // allow time for sends
-  // await new Promise((r) => setTimeout(r, 3000));
-  // const res = await fetch(`http://localhost:8025/api/v1/messages`);
-  // const resj = await res.json();
-  // expect(resj.messages.length).toBe(2);
-  // expect(resj.messages.every((m) => m.Subject === "Test Mailing")).toBeTruthy();
-  // expect(
-  //   resj.messages.some(
-  //     (m) =>
-  //       m.To[0].Name === "bill smith" && m.To[0].Address === "bill@example.com"
-  //   )
-  // ).toBeTruthy();
-  // execSync("cabal run clean-db");
-  // await fetch(`http://localhost:8025/api/v1/messages`, {
-  //   method: "DELETE",
-  // });
+  await new Promise((r) => setTimeout(r, 5000));
+  const res1 = await fetch(`http://localhost:8025/api/v1/messages`);
+  const res1j = await res1.json();
+  expect(res1j.messages.length).toBe(2);
+  expect(
+    res1j.messages.every((m) => m.Subject === "Test Mailing")
+  ).toBeTruthy();
+  expect(
+    res1j.messages.some(
+      (m) =>
+        m.To[0].Name === "bill smith" && m.To[0].Address === "bill@example.com"
+    )
+  ).toBeTruthy();
+  execSync("cabal run clean-db");
+  await fetch(`http://localhost:8025/api/v1/messages`, {
+    method: "DELETE",
+  });
 });
