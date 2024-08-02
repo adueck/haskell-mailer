@@ -121,6 +121,9 @@ test("create and send mailing", async ({ page }) => {
   // await expect(
   //   page.getByRole("link", { name: "My First Mailing Sent" })
   // ).toBeVisible();
+
+  // TODO: in the CI the serever is unresponsive at this point. What's causing it
+  // to crash?? -- move some kind of test up?
   try {
     const mt = await fetch("http://localhost:8080/test-send", {
       method: "POST",
