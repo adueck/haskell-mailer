@@ -96,7 +96,6 @@ createContact conn = do
 createMailing :: Connection -> ActionM ()
 createMailing conn = do
   mailing <- mailingFromParams nil <$> formParams
-  liftIO $ putStrLn "CREATING MAILING"
   case mailing of
     Nothing -> redirect "/"
     Just d -> do
