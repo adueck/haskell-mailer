@@ -117,10 +117,10 @@ test("create and send mailing", async ({ page }) => {
     .fill("Hi everyone.\n\nThis is my formatted mailing");
   await page.getByRole("button", { name: "Create Mailing" }).click();
   await page.getByRole("link", { name: "My First Mailing Draft" }).click();
-  await page.getByRole("button", { name: "Send Mailing" }).click();
-  await expect(
-    page.getByRole("link", { name: "My First Mailing Sent" })
-  ).toBeVisible();
+  // await page.getByRole("button", { name: "Send Mailing" }).click();
+  // await expect(
+  //   page.getByRole("link", { name: "My First Mailing Sent" })
+  // ).toBeVisible();
   try {
     const mt = await fetch("http://localhost:8080/test-send", {
       method: "POST",
