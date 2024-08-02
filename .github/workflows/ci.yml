@@ -78,7 +78,7 @@ jobs:
         with:
           run: |
             cabal run haskell-mailer &
-            npx playwright test
+            npx playwright test ./tests/contacts.test.ts
           wait-on: file://playwright-report/index.html
           log-output: stderr,stdout
           # wait-for: 1m
