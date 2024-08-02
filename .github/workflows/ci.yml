@@ -76,15 +76,17 @@ jobs:
       - uses: JarvusInnovations/background-action@v1
         name: Bootstrap System Under Test (SUT)
         with:
-          run: cabal run haskell-mailer
+          run: |
+            cabal run haskell-mailer &
+            npx playwright test
           wait-on: file://playwright-report/index.html
           log-output: stderr,stdout
-          wait-for: 1m
+          # wait-for: 1m
           tail: true # true = stderr,stdout
           # This will allow you to monitor the progress live
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      # - name: Run Playwright tests
+      #   run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
