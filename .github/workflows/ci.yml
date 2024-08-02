@@ -72,10 +72,17 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+
+      - uses: JarvusInnovations/background-action@v1
+        name: Bootstrap System Under Test (SUT)
+        with:
+          run: |
+            cabal run haskell-mailer &
+          tail: true # true = stderr,stdout
+          # This will allow you to monitor the progress live
+
       - name: Run Playwright tests
-        run: |
-          cabal run haskell-mailer &
-          npx playwright test
+        run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
