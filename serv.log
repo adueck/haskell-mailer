@@ -1,9 +1,0 @@
-Build profile: -w ghc-9.4.8 -O1
-In order, the following will be built (use -v for more details):
- - haskell-mailer-0.1.0.0 (exe:haskell-mailer) (file app/Handlers.hs changed)
-Preprocessing executable 'haskell-mailer' for haskell-mailer-0.1.0.0..
-Building executable 'haskell-mailer' for haskell-mailer-0.1.0.0..
-[8 of 9] Compiling Handlers         ( app/Handlers.hs, /Users/adam/Code/haskell-mailer/dist-newstyle/build/aarch64-osx/ghc-9.4.8/haskell-mailer-0.1.0.0/x/haskell-mailer/build/haskell-mailer/haskell-mailer-tmp/Handlers.o ) [Source file changed]
-[9 of 9] Compiling Main             ( app/Main.hs, /Users/adam/Code/haskell-mailer/dist-newstyle/build/aarch64-osx/ghc-9.4.8/haskell-mailer-0.1.0.0/x/haskell-mailer/build/haskell-mailer/haskell-mailer-tmp/Main.o ) [Handlers changed]
-[10 of 10] Linking /Users/adam/Code/haskell-mailer/dist-newstyle/build/aarch64-osx/ghc-9.4.8/haskell-mailer-0.1.0.0/x/haskell-mailer/build/haskell-mailer/haskell-mailer [Objects changed]
-terminated
