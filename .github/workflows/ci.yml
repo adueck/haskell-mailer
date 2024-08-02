@@ -67,7 +67,7 @@ jobs:
       - name: Build
         run: |
           cabal build all
-          cabal run mail-test
+          cabal run mail-one
           curl http://localhost:8025/api/v1/messages
 
       # CANNOT GET THIS WORKING BECAUSE FOR SOME REASON THE SENDING TO THE
