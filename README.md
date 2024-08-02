@@ -43,7 +43,7 @@ $ cabal run
 
 ## End to end testing
 
-Requires Mailpit to be running
+Requires [Mailpit](https://mailpit.axllent.org/) to be installed in path OR to be running on `localhost:8025` (API) and `localhost:1025` (SMTP).
 
 ```
 $ npx playwright test
