@@ -156,21 +156,49 @@ executable clean-db
     -- Base language which the package is written in.
     default-language: GHC2021
 
-executable mail-test
+executable mail-one
     -- Import common warning flags.
     import:           warnings
 
     -- .hs or .lhs file containing the Main module.
-    main-is:          MailTest.hs
+    main-is:          MailOne.hs
 
     -- Modules included in this executable, other than Main.
+    other-modules:  Types,
+        DB,
+        Mailer,
+        Views,
+        EnvBuddy
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.17.2.1,
-        smtp-mail
+        bytestring,
+        directory,
+        async,
+        filepath,
+        scotty,
+        postgresql-simple,
+        smtp-mail,
+        mime-mail,
+        text,
+        aeson,
+        blaze-html,
+        regex-compat,
+        uri-encode,
+        uuid,
+        uuid-types,
+        http-types,
+        wai-cors,
+        wai-middleware-static,
+        websockets,
+        warp,
+        wai,
+        wai-extra,
+        wai-websockets,
+        zenacy-html
 
     -- Directories containing source files.
     hs-source-dirs:   app

@@ -22,6 +22,7 @@ data AppEnv
     dbHostEnv :: String,
     dbPasswordEnv :: String
   }
+  deriving (Show, Eq)
 
 data Mailing = Mailing
   { mailingId :: UUID,
