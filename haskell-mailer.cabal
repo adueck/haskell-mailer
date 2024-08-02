@@ -155,3 +155,25 @@ executable clean-db
 
     -- Base language which the package is written in.
     default-language: GHC2021
+
+executable mail-test
+    -- Import common warning flags.
+    import:           warnings
+
+    -- .hs or .lhs file containing the Main module.
+    main-is:          MailTest.hs
+
+    -- Modules included in this executable, other than Main.
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+
+    -- Other library packages from which modules are imported.
+    build-depends:    base ^>=4.17.2.1,
+        smtp-mail
+
+    -- Directories containing source files.
+    hs-source-dirs:   app
+
+    -- Base language which the package is written in.
+    default-language: GHC2021
