@@ -17,6 +17,7 @@ module DB
     markMailingPublished,
     makeDBConnection,
     setupDB,
+    getFirstMailing,
   )
 where
 
@@ -80,6 +81,17 @@ getMailingById conn _id = do
       conn
       "SELECT * FROM mailings WHERE mailing_id = ? "
       (Only _id :: Only UUID)
+  if null x
+    then return Nothing
+    else return $ Just (toMailing $ head x)
+
+getFirstMailing :: Connection -> IO (Maybe Mailing)
+getFirstMailing conn = do
+  x :: [MailingOutput] <-
+    query
+      conn
+      "SELECT * FROM mailings LIMIT 1"
+      ()
   if null x
     then return Nothing
     else return $ Just (toMailing $ head x)

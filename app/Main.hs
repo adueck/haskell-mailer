@@ -68,3 +68,4 @@ webApp conn = Sc.scottyApp $ do
   post "/enough/:_id" (H.handleUnsubscribe conn)
   get "/change/:_id" (H.showSelfUpdate conn)
   post "/change/:_id" H.handleSelfUpdate
+  post "/test-send" (H.handleSendM conn)

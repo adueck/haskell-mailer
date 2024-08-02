@@ -66,7 +66,7 @@ makeMail from subject content to =
     (DS.pack subject)
     [Mime.htmlPart $ DL.fromStrict content]
 
-sendMailingP :: Connection -> Mailing -> [Contact] -> IO ()
+sendMailingP :: Connection -> Mailing -> [Contact] -> IO [Either SomeException ()]
 sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
   env <- getAppEnv
   let contentU = changeImgTags (DS.pack content)
@@ -98,8 +98,10 @@ sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
                 Right () -> ""
             )
         -- wait two seconds to ensure we don't send more than 30 e-mails per minute
-        threadDelay 2000000
-  mapM_ tryOneMailing contacts
+        -- threadDelay 2000000
+        return result
+  a <- mapM tryOneMailing contacts
+  return a
 
 changeImgTags :: Text -> Text
 changeImgTags html = htmlRenderNodes $ getInsideBody $ htmlMapElem queryHtml (textToNode html)

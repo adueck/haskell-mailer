@@ -121,6 +121,11 @@ test("create and send mailing", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: "My First Mailing Sent" })
   ).toBeVisible();
+  const mt = await fetch("http://localhost:8080/test-send", {
+    method: "POST",
+  });
+  const mtr = await mt.json();
+  console.log({ mtr });
   await new Promise((r) => setTimeout(r, 3000));
   const rf = await fetch("http://localhost:8025/api/v1/messages");
   const rfj = await rf.json();
