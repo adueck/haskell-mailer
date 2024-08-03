@@ -161,7 +161,7 @@ handleSendMailing conn = do
         Nothing -> do
           redirect "/"
         Just d -> do
-          _ <- liftIO $ M.sendMailingP conn d contacts
+          _ <- liftIO $ async $ M.sendMailingP conn d contacts
           redirect "/"
 
 updateContact :: Connection -> ActionM ()

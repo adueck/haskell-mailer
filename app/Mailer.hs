@@ -37,14 +37,11 @@ sendAdminMail subj body = do
 
 makeSender :: IO (Mail -> IO ())
 makeSender = do
-  -- env <- getAppEnv
-  return $ sendMail' "localhost" 1025
-
--- just forcing test smtp for ci debug
--- if null (domainEnv env)
--- if no SMTP provided, use local mailpit for testing
--- then sendMail' "localhost" 1025
--- else sendMailWithLoginTLS' (domainEnv env) (read (portEnv env)) (loginEnv env) (passwordEnv env)
+  env <- getAppEnv
+  if null (domainEnv env)
+    -- if no SMTP provided, use local mailpit for testing
+    then return $ sendMail' "localhost" 1025
+    else return $ sendMailWithLoginTLS' (domainEnv env) (read (portEnv env)) (loginEnv env) (passwordEnv env)
 
 makeTextMail :: String -> String -> String -> String -> Mail
 makeTextMail from to subject content =
@@ -66,7 +63,7 @@ makeMail from subject content to =
     (DS.pack subject)
     [Mime.htmlPart $ DL.fromStrict content]
 
-sendMailingP :: Connection -> Mailing -> [Contact] -> IO [Either SomeException ()]
+sendMailingP :: Connection -> Mailing -> [Contact] -> IO ()
 sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
   env <- getAppEnv
   let contentU = changeImgTags (DS.pack content)
@@ -98,10 +95,9 @@ sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
                 Right () -> ""
             )
         -- wait two seconds to ensure we don't send more than 30 e-mails per minute
-        -- threadDelay 2000000
+        threadDelay 2000000
         return result
-  a <- mapM tryOneMailing contacts
-  return a
+  mapM_ tryOneMailing contacts
 
 changeImgTags :: Text -> Text
 changeImgTags html = htmlRenderNodes $ getInsideBody $ htmlMapElem queryHtml (textToNode html)
