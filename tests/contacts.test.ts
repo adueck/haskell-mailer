@@ -201,14 +201,14 @@ test("allow recipient to update their contact info", async ({ page }) => {
   await page.locator('input[name="name"]').fill("Bob Smith");
   await page.locator('input[name="name"]').press("Tab");
   await page.locator('input[name="email"]').fill("bob@example.com");
-  await page.getByRole("button", { name: "Create Contact" }).click();
+  await page.locator('input[name="email"]').press("Enter");
   await page.getByRole("link", { name: "New Mailing" }).click();
   await page.locator('input[name="subject"]').click();
-  await page.locator('input[name="subject"]').fill("Hi");
+  await page.locator('input[name="subject"]').fill("Hi There");
   await page.locator('input[name="subject"]').press("Tab");
-  await page.locator("trix-editor").fill("hello");
+  await page.locator("trix-editor").fill("Hello");
   await page.getByRole("button", { name: "Create Mailing" }).click();
-  await page.getByRole("link", { name: "Hi Draft" }).click();
+  await page.getByRole("link", { name: "Hi There Draft" }).click();
   await page.getByRole("button", { name: "Send Mailing" }).click();
   await page.goto("http://localhost:8025/");
   await page.getByRole("link", { name: "sender@example.com bob@" }).click();
@@ -219,39 +219,55 @@ test("allow recipient to update their contact info", async ({ page }) => {
     .click();
   const page1 = await page1Promise;
   await page1.getByLabel("Name").click();
-  await page1.getByLabel("Name").fill("Bob Smath");
+  await page1.getByLabel("Name").click();
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").fill("Frank Smith");
   await page1.locator('input[name="email"]').click();
-  await page1.locator('input[name="email"]').fill("bob@example.ca");
+  await page1.locator('input[name="email"]').click();
+  await page1.locator('input[name="email"]').press("ControlOrMeta+ArrowLeft");
+  await page1.locator('input[name="email"]').press("ControlOrMeta+ArrowLeft");
+  await page1.locator('input[name="email"]').press("ArrowRight");
+  await page1.locator('input[name="email"]').press("ArrowRight");
+  await page1.locator('input[name="email"]').press("ArrowRight");
+  await page1.locator('input[name="email"]').fill("frank@example.com");
   await page1.getByRole("button", { name: "Update" }).click();
   await expect(
     page1.getByRole("heading", { name: "Your contact info has been" })
   ).toBeVisible();
-  await expect(page1.getByText("Name: Bob Smath")).toBeVisible();
-  await expect(page1.getByText("Email: bob@example.ca")).toBeVisible();
+  await page1.getByText("Name: Frank Smith").click();
+  await expect(page1.getByText("Name: Frank Smith")).toBeVisible();
+  await expect(page1.getByText("Email: frank@example.com")).toBeVisible();
+  await page.getByRole("link", { name: "MailpitMailpit" }).click();
+  await page.getByRole("link", { name: "sender@example.com admin@" }).click();
+  await expect(page.getByText("Old contact info: Bob Smith")).toBeVisible();
+  await page.getByRole("button", { name: " Delete" }).click();
   await page1.getByRole("link", { name: "Made a mistake?" }).click();
   await page1.getByLabel("Name").click();
   await page1.getByLabel("Name").press("ArrowLeft");
   await page1.getByLabel("Name").press("ArrowLeft");
-  await page1.getByLabel("Name").fill("Bob Smoth");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").press("ArrowLeft");
+  await page1.getByLabel("Name").fill("John Smith");
   await page1.locator('input[name="email"]').click();
-  await page1.locator('input[name="email"]').fill("bob@example.co");
-  await page1.getByRole("button", { name: "Update" }).click();
-  await expect(page1.getByText("Name: Bob Smoth")).toBeVisible();
-  await expect(page1.getByText("Email: bob@example.co")).toBeVisible();
-  await page1.goto("http://localhost:8080/");
-  await page1.getByRole("link", { name: "Contacts" }).click();
+  await page1.locator('input[name="email"]').press("Alt+ArrowLeft");
+  await page1.locator('input[name="email"]').press("Alt+ArrowLeft");
+  await page1.locator('input[name="email"]').press("Alt+ArrowLeft");
+  await page1.locator('input[name="email"]').press("Alt+ArrowLeft");
+  await page1.locator('input[name="email"]').fill("john@example.com");
+  await page1.locator('input[name="email"]').press("Enter");
   await expect(
-    page1.getByRole("cell", { name: "bob@example.co" })
+    page1.getByRole("heading", { name: "Your contact info has been" })
   ).toBeVisible();
-  await page1.getByRole("cell", { name: "Bob Smoth" }).click();
-  await page1.goto("http://localhost:8025/");
-  await page1
-    .getByRole("link", {
-      name: "sender@example.com admin@example.com Contact Updated Old contact info: Bob Smath bob@example.ca New contact info: Bob Smoth bob@example.co 545 B a few seconds ago",
-      exact: true,
-    })
-    .click();
-  await expect(page1.getByText("Contact Updated")).toBeVisible();
-  await expect(page1.getByText("Old contact info: Bob Smath")).toBeVisible();
-  await expect(page1.getByText("New contact info: Bob Smoth")).toBeVisible();
+  await page1.getByText("Name: John Smith").click();
+  await expect(page1.getByText("Name: John Smith")).toBeVisible();
+  await expect(page1.getByText("Email: john@example.com")).toBeVisible();
+  await page.getByRole("link", { name: "sender@example.com admin@" }).click();
+  await expect(page.getByText("Old contact info: Frank Smith")).toBeVisible();
+  await expect(page.getByText("New contact info: John Smith")).toBeVisible();
 });
