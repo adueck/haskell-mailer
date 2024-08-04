@@ -18,6 +18,7 @@ module DB
     markMailingPublished,
     makeDBConnection,
     getFirstMailing,
+    getMailingSends,
   )
 where
 
@@ -49,9 +50,22 @@ toMailing (_id, subject, content, created, modified, published) =
       mailingPublished = published
     }
 
+toSend :: SendOutput -> Send
+toSend (send_id, send_mailing, send_contact, send_email, send_error, send_date) =
+  Send
+    { sendId = send_id,
+      sendMailing = send_mailing,
+      sendContact = send_contact,
+      sendEmail = send_email,
+      sendError = send_error,
+      sendDate = send_date
+    }
+
 type MailingOutput = (UUID, String, String, ZonedTimestamp, ZonedTimestamp, Bool)
 
 type ContactOutput = (UUID, String, String, String, String)
+
+type SendOutput = (UUID, UUID, UUID, String, String, ZonedTimestamp)
 
 getContacts :: Connection -> IO [Contact]
 getContacts conn = do
@@ -84,6 +98,16 @@ getMailingById conn _id = do
   if null x
     then return Nothing
     else return $ Just (toMailing $ head x)
+
+getMailingSends :: Connection -> UUID -> IO [Send]
+getMailingSends conn mailing_id = do
+  x :: [SendOutput] <-
+    query
+      conn
+      "SELECT DISTINCT ON (contact_id) * \
+      \ FROM sends WHERE mailing_id = ? ORDER BY contact_id, (send_error != ''), sent_on DESC;"
+      (Only mailing_id :: Only UUID)
+  return $ toSend <$> x
 
 getFirstMailing :: Connection -> IO (Maybe Mailing)
 getFirstMailing conn = do

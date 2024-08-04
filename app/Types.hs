@@ -43,11 +43,11 @@ data Send = Send
     sendContact :: UUID,
     -- | The email that was used for the Contact receiving the mailing
     sendEmail :: String,
-    -- | The date/time that the mailing was sent to this contact
-    sendDate :: ZonedTimestamp,
     -- | An error string if there was a problem in sending, null if everything
     --  was ok
-    sendError :: String
+    sendError :: String,
+    -- | The date/time that the mailing was sent to this contact
+    sendDate :: ZonedTimestamp
   }
 
 data Contact = Contact

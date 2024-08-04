@@ -131,11 +131,12 @@ showMailing conn = do
     Nothing -> redirect "/mailings"
     Just _id -> do
       mailing <- liftIO $ DB.getMailingById conn _id
+      sends <- liftIO $ DB.getMailingSends conn _id
       case mailing of
         Nothing -> do
           redirect "/mailings"
         Just m -> do
-          mailingPage m
+          mailingPage m sends
 
 handleSendM :: Connection -> ActionM ()
 handleSendM conn = do

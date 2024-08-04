@@ -52,8 +52,8 @@ contactPage contact = html $
     appTemplate "Edit Contact" "/contact" $ do
       contactForm contact ("/contact/" ++ show (contactId contact)) "Edit Contact"
 
-mailingPage :: Mailing -> ActionM ()
-mailingPage mailing = html $
+mailingPage :: Mailing -> [Send] -> ActionM ()
+mailingPage mailing sends = html $
   renderHtml $
     appTemplate (mailingSubject mailing) "/mailing" $ do
       mailingForm
@@ -61,6 +61,7 @@ mailingPage mailing = html $
         (mailingSubject mailing, mailingContent mailing, mailingPublished mailing)
         ("/mailing/" ++ show (mailingId mailing))
         "Save"
+      sendsInfo sends
 
 newContactPage :: ActionM ()
 newContactPage = html $
@@ -250,6 +251,32 @@ searchBar value = H.form H.! A.class_ "form-inline float-right mr-2 ml-3" H.! A.
     H.input H.! A.class_ "form-control" H.! A.name "search" H.! A.type_ "text" H.! A.autocomplete "off" H.! A.placeholder "Search" H.! A.value (stringValue value)
     H.div H.! A.class_ "input-group-append" $ do
       H.button "Search" H.! A.class_ "input-group-text" H.! A.class_ "submit"
+
+sendsInfo :: [Send] -> H.Html
+sendsInfo sends = do
+  unless (null sends) $ do
+    let successes = filter (null . sendError) sends
+    let failures = filter (not . null . sendError) sends
+    H.h4 $ H.toHtml $ "Sent to " ++ show (length sends) ++ " contacts"
+    unless (null failures) $ do
+      H.h5 $ H.toHtml $ "Failures (" ++ show (length failures) ++ ")"
+      H.ul H.! A.class_ "list-group" $
+        mapM_
+          ( \s ->
+              H.li H.! A.class_ "list-group-item list-group-item-danger" $ do
+                H.div (H.toHtml $ sendEmail s ++ " " ++ sendError s)
+                H.div (H.toHtml (show (sendDate s)))
+          )
+          failures
+    unless (null successes) $ do
+      H.h5 $ H.toHtml $ "Successes (" ++ show (length successes) ++ ")"
+      H.ul H.! A.class_ "list-group" $
+        mapM_
+          ( \s ->
+              H.li H.! A.class_ "list-group-item" $ do
+                H.div (H.toHtml $ sendEmail s ++ " " ++ show (sendDate s))
+          )
+          successes
 
 contactsTable :: [Contact] -> H.Html
 contactsTable contacts = H.table H.! A.class_ "table" $ do
