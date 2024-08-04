@@ -113,8 +113,8 @@ showNewMailing = newMailingPage
 
 showContact :: Connection -> ActionM ()
 showContact conn = do
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
+  pathId <- getPathId
+  case pathId of
     Nothing -> redirect "/contacts"
     Just _id -> do
       contact <- liftIO $ DB.getContactById conn _id
@@ -167,8 +167,8 @@ handleSendMailing conn = do
 updateContact :: Connection -> ActionM ()
 updateContact conn = do
   ps <- formParams
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
+  pathId <- getPathId
+  case pathId of
     Nothing -> redirect "/contacts"
     Just _id -> do
       let contact = contactFromParams _id ps
@@ -188,8 +188,8 @@ updateMailing conn = do
 updateMailingStep :: Connection -> ActionM UUID
 updateMailingStep conn = do
   ps <- formParams
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
+  pathId <- getPathId
+  case pathId of
     Nothing -> redirect "/mailings"
     Just _id -> do
       let mailing = mailingFromParams _id ps
@@ -201,8 +201,8 @@ updateMailingStep conn = do
 
 destroyContact :: Connection -> ActionM ()
 destroyContact conn = do
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
+  pathId <- getPathId
+  case pathId of
     Nothing -> redirect "/contacts"
     Just _id -> do
       res <- liftIO $ DB.removeContact conn _id
@@ -212,8 +212,8 @@ destroyContact conn = do
 
 unsubscribePage :: Connection -> ActionM ()
 unsubscribePage conn = do
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
+  pathId <- getPathId
+  case pathId of
     Nothing -> unsubscribeErrorPage
     Just _id -> do
       res <- liftIO $ DB.getContactById conn _id
@@ -223,8 +223,8 @@ unsubscribePage conn = do
 
 showSelfUpdate :: Connection -> ActionM ()
 showSelfUpdate conn = do
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
+  pathId <- getPathId
+  case pathId of
     Nothing -> selfUpdateErrorPage
     Just _id -> do
       res <- liftIO $ DB.getContactById conn _id
@@ -235,9 +235,9 @@ showSelfUpdate conn = do
 handleUnsubscribe :: Connection -> ActionM ()
 handleUnsubscribe conn = do
   ps <- formParams
-  _idS :: String <- pathParam "_id"
+  pathId <- getPathId
   let checked = Just "on" == lookup "unsubscribe" ps
-  case fromString _idS of
+  case pathId of
     (Just _id) -> do
       c <- liftIO $ DB.getContactById conn _id
       case c of
@@ -256,27 +256,49 @@ handleUnsubscribe conn = do
         _ -> unsubscribeErrorPage
     _ -> unsubscribeErrorPage
 
-handleSelfUpdate :: ActionM ()
-handleSelfUpdate = do
-  json $ object ["ok" .= True]
-
--- ps <- formParams
--- _idS :: String <- pathParam "_id"
--- case fromString _idS of
--- (Just _id) -> do
---   json $ object ["ok" .= True]
--- _ -> json $ object ["ok" .= False]
+handleSelfUpdate :: Connection -> ActionM ()
+handleSelfUpdate conn = do
+  ps <- formParams
+  pathId <- getPathId
+  case pathId of
+    Nothing -> selfUpdateErrorPage
+    Just _id -> do
+      let nameR = unpack <$> lookup "name" ps
+      let emailR = unpack <$> lookup "email" ps
+      case (nameR, emailR) of
+        (Just name, Just email) -> do
+          oldC <- liftIO $ DB.getContactById conn _id
+          _ <- liftIO $ DB.updateNameEmailContact conn _id name email
+          newC <- liftIO $ DB.getContactById conn _id
+          case (oldC, newC) of
+            (Just oldContact, Just newContact) -> do
+              _ <-
+                liftIO $
+                  sendAdminMail
+                    "Contact Updated"
+                    ( "Old contact info: "
+                        ++ contactName oldContact
+                        ++ " "
+                        ++ contactEmail oldContact
+                        ++ "\nNew contact info: "
+                        ++ contactName newContact
+                        ++ " "
+                        ++ contactEmail newContact
+                    )
+              selfUpdateSuccessPage newContact
+            _ -> selfUpdateErrorPage
+        _ -> selfUpdateErrorPage
 
 destroyMailing :: Connection -> ActionM ()
 destroyMailing conn = do
-  _idS :: String <- pathParam "_id"
-  case fromString _idS of
+  pathId <- getPathId
+  case pathId of
     Nothing -> redirect "/mailings"
     Just _id -> do
       res <- liftIO $ DB.removeMailing conn _id
       case res of
         Right _ -> do
-          let path = uploadBasePath </> _idS
+          let path = uploadBasePath </> toString _id
           directoryExist <- liftIO $ doesDirectoryExist path
           liftIO $ when directoryExist $ removeDirectoryRecursive path
           redirect "/"
@@ -285,6 +307,11 @@ destroyMailing conn = do
 -- Views
 
 -- Helper Functions
+
+getPathId :: ActionM (Maybe UUID)
+getPathId = do
+  _idS :: String <- pathParam "_id"
+  return $ fromString _idS
 
 contactFromParams :: UUID -> [Param] -> Maybe Contact
 contactFromParams _id p = do

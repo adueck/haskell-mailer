@@ -12,10 +12,12 @@ module Views
     unsubscribeErrorPage,
     selfUpdateErrorPage,
     selfUpdatePage,
+    selfUpdateSuccessPage,
   )
 where
 
 import Control.Monad (unless)
+import Data.UUID (toString)
 import Data.UUID.Types (UUID, nil)
 import Text.Blaze.Html (dataAttribute, stringValue)
 import Text.Blaze.Html.Renderer.Text
@@ -100,6 +102,21 @@ selfUpdateErrorPage = html $
         H.h2 "Error Updating Contact Info" H.! A.class_ "mb-3"
         H.p $ do
           "Sorry! There was an error in updating your contact info."
+
+selfUpdateSuccessPage :: Contact -> ActionM ()
+selfUpdateSuccessPage contact = html $
+  renderHtml $
+    baseTemplate "Contact Info Updated" $ do
+      H.div H.! A.class_ "container py-4" H.! A.style "max-width: 600px;" $ do
+        H.h2 "Your contact info has been updated" H.! A.class_ "mb-3"
+        H.div H.! A.class_ "my-4" $
+          H.toHtml $
+            "Name: " ++ contactName contact
+        H.div H.! A.class_ "my-4" $
+          H.toHtml $
+            "Email: " ++ contactEmail contact
+        H.a H.! A.href (stringValue ("/change/" ++ toString (contactId contact))) $
+          "Made a mistake?"
 
 unsubscribeConfirmationPage :: String -> Contact -> ActionM ()
 unsubscribeConfirmationPage errMsg c = html $

@@ -1,12 +1,11 @@
 # haskell-mailer
 
-![Build](https://github.com/adueck/haskell-mailer/actions/workflows/ci.yml/badge.svg)
+![E2E Testing](https://github.com/adueck/haskell-mailer/actions/workflows/ci.yml/badge.svg)
 
 A simple personal newsletter mailing app.
 
 ### 🚧 TODO: IN PROGRESS
 
-- ability to update address info
 - display sends information
 - CSV contacts import / export
 - Email preview

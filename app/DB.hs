@@ -12,11 +12,11 @@ module DB
     addSend,
     addMailing,
     updateContact,
+    updateNameEmailContact,
     updateMailing,
     setupDB,
     markMailingPublished,
     makeDBConnection,
-    setupDB,
     getFirstMailing,
   )
 where
@@ -175,6 +175,22 @@ updateContact conn contact = do
           "UPDATE contacts SET name = ?, email = ?, contact_group = ?, notes = ? \
           \ WHERE contact_id = ?"
           (contactName contact, contactEmail contact, contactGroup contact, contactNotes contact, contactId contact)
+      if r == 1
+        then return $ Right ()
+        else return $ Left "Error updating contact"
+
+updateNameEmailContact :: Connection -> UUID -> String -> String -> IO (Either String ())
+updateNameEmailContact conn _id name email = do
+  res <- getContactById conn _id
+  case res of
+    Nothing -> return $ Left "Contact not found!"
+    Just _ -> do
+      r <-
+        execute
+          conn
+          "UPDATE contacts SET name = ?, email = ? \
+          \ WHERE contact_id = ?"
+          (name, email, _id)
       if r == 1
         then return $ Right ()
         else return $ Left "Error updating contact"
