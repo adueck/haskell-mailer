@@ -46,11 +46,12 @@ contactsIndexPage msg search contacts = html $
         H.a "Add Contact" H.! A.href "/contact/"
       H.p $ H.toHtml msg
 
-contactPage :: Contact -> ActionM ()
-contactPage contact = html $
+contactPage :: Contact -> [(String, Send)] -> ActionM ()
+contactPage contact sends = html $
   renderHtml $
     appTemplate "Edit Contact" "/contact" $ do
       contactForm contact ("/contact/" ++ show (contactId contact)) "Edit Contact"
+      sendsInfo sends
 
 mailingPage :: Mailing -> [Send] -> ActionM ()
 mailingPage mailing sends = html $
@@ -61,7 +62,8 @@ mailingPage mailing sends = html $
         (mailingSubject mailing, mailingContent mailing, mailingPublished mailing)
         ("/mailing/" ++ show (mailingId mailing))
         "Save"
-      sendsInfo sends
+      H.h4 $ H.toHtml $ "Sent to " ++ show (length sends) ++ " contacts"
+      sendsInfo (map ("",) sends)
 
 newContactPage :: ActionM ()
 newContactPage = html $
@@ -252,31 +254,33 @@ searchBar value = H.form H.! A.class_ "form-inline float-right mr-2 ml-3" H.! A.
     H.div H.! A.class_ "input-group-append" $ do
       H.button "Search" H.! A.class_ "input-group-text" H.! A.class_ "submit"
 
-sendsInfo :: [Send] -> H.Html
+sendsInfo :: [(String, Send)] -> H.Html
 sendsInfo sends = do
   unless (null sends) $ do
-    let successes = filter (null . sendError) sends
-    let failures = filter (not . null . sendError) sends
-    H.h4 $ H.toHtml $ "Sent to " ++ show (length sends) ++ " contacts"
-    unless (null failures) $ do
-      H.h5 $ H.toHtml $ "Failures (" ++ show (length failures) ++ ")"
-      H.ul H.! A.class_ "list-group" $
-        mapM_
-          ( \s ->
-              H.li H.! A.class_ "list-group-item list-group-item-danger" $ do
-                H.div (H.toHtml $ sendEmail s ++ " " ++ sendError s)
-                H.div (H.toHtml (show (sendDate s)))
-          )
-          failures
-    unless (null successes) $ do
-      H.h5 $ H.toHtml $ "Successes (" ++ show (length successes) ++ ")"
-      H.ul H.! A.class_ "list-group" $
-        mapM_
-          ( \s ->
-              H.li H.! A.class_ "list-group-item" $ do
-                H.div (H.toHtml $ sendEmail s ++ " " ++ show (sendDate s))
-          )
-          successes
+    let successes = filter (null . sendError . snd) sends
+    let failures = filter (not . null . sendError . snd) sends
+    H.div H.! A.style "max-width: 700px" $ do
+      unless (null failures) $ do
+        H.h5 $ H.toHtml $ "Failures (" ++ show (length failures) ++ ")"
+        H.ul H.! A.class_ "list-group" $
+          mapM_
+            ( \(title, s) ->
+                H.li H.! A.class_ "list-group-item list-group-item-danger" $ do
+                  H.div (H.toHtml title)
+                  H.div (H.toHtml $ sendEmail s ++ " " ++ sendError s)
+                  H.div (H.toHtml (show (sendDate s)))
+            )
+            failures
+      unless (null successes) $ do
+        H.h5 $ H.toHtml $ "Successes (" ++ show (length successes) ++ ")"
+        H.ul H.! A.class_ "list-group" $
+          mapM_
+            ( \(title, s) ->
+                H.li H.! A.class_ "list-group-item" $ do
+                  H.div (H.toHtml title)
+                  H.div (H.toHtml $ sendEmail s ++ " " ++ show (sendDate s))
+            )
+            successes
 
 contactsTable :: [Contact] -> H.Html
 contactsTable contacts = H.table H.! A.class_ "table" $ do

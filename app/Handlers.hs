@@ -118,11 +118,12 @@ showContact conn = do
     Nothing -> redirect "/contacts"
     Just _id -> do
       contact <- liftIO $ DB.getContactById conn _id
+      sends <- liftIO $ DB.getContactSends conn _id
       case contact of
         Nothing -> do
           redirect "/contacts"
         Just c -> do
-          contactPage c
+          contactPage c sends
 
 showMailing :: Connection -> ActionM ()
 showMailing conn = do

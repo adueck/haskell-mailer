@@ -19,6 +19,7 @@ module DB
     makeDBConnection,
     getFirstMailing,
     getMailingSends,
+    getContactSends,
   )
 where
 
@@ -87,6 +88,18 @@ getContactById conn _id = do
   if null x
     then return Nothing
     else return $ Just (toContact $ head x)
+
+getContactSends :: Connection -> UUID -> IO [(String, Send)]
+getContactSends conn _id = do
+  x :: [(String, UUID, UUID, UUID, String, String, ZonedTimestamp)] <-
+    query
+      conn
+      "SELECT m.subject, s.send_id, s.mailing_id, s.contact_id, s.email, s.send_error, s.sent_on \
+      \ FROM sends s \
+      \ INNER JOIN mailings m ON s.mailing_id = m.mailing_id \
+      \ WHERE contact_id = ?"
+      (Only _id :: Only UUID)
+  return $ map (\(subj, a, b, c, d, e, r) -> (subj, Send a b c d e r)) x
 
 getMailingById :: Connection -> UUID -> IO (Maybe Mailing)
 getMailingById conn _id = do
