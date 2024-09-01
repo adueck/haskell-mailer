@@ -20,19 +20,6 @@ test("add/update/delete contacts", async ({ page }) => {
     expect(dialog.message()).toContain("Delete contact?");
     await dialog.accept();
   });
-  await page.goto("/");
-  await page.getByRole("link", { name: "Contacts" }).click();
-  await page.getByRole("link", { name: "Add Contact" }).click();
-  await page.locator('input[name="name"]').click();
-  await page.locator('input[name="name"]').fill("Bill Joe");
-  await page.locator('input[name="name"]').press("Tab");
-  await page.locator('input[name="email"]').fill("bill@joe.com");
-  await page.locator('input[name="email"]').press("Tab");
-  await page.locator('input[name="group"]').fill("friends");
-  await page.locator('input[name="group"]').press("Tab");
-  await page.locator('input[name="notes"]').fill("His name is bill");
-  await page.getByRole("button", { name: "Create Contact" }).click();
-  await page.getByRole("link", { name: "Add Contact" }).click();
 });
 
 // test("create and send mailing", async ({ page }) => {

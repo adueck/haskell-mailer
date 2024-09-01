@@ -86,6 +86,7 @@ executable haskell-mailer
         smtp-mail,
         mime-mail,
         text,
+        template-haskell,
         aeson,
         blaze-html,
         regex-compat,
