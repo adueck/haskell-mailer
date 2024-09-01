@@ -50,6 +50,9 @@ webApp conn = Sc.scottyApp $ do
   --  (web app)
   get "/" (H.showHome conn)
   get "/contacts" (H.indexContacts conn "")
+  get "/upload-contacts" H.showUploadContacts
+  post "/upload-contacts" (H.handleUploadContacts conn)
+  get "/download-contacts" (H.handleDownloadContacts conn)
   get "/contact" H.showNewContact
   post "/contact" (H.createContact conn)
   get "/contact/:_id" (H.showContact conn)

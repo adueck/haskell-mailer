@@ -21,6 +21,9 @@ module Handlers
     showSelfUpdate,
     handleSelfUpdate,
     handleSendM,
+    showUploadContacts,
+    handleUploadContacts,
+    handleDownloadContacts,
   )
 where
 
@@ -30,9 +33,11 @@ import Control.Monad.IO.Class
 import DB qualified
 import Data.Aeson
 import Data.ByteString.Lazy qualified as B
-import Data.Text (unpack)
+import Data.Csv qualified as CSV
+import Data.Text (Text, unpack)
 import Data.Text.Lazy qualified as T
 import Data.UUID.Types
+import Data.Vector (Vector)
 import Database.PostgreSQL.Simple
 import EnvBuddy
 import FileHelpers (getFileFromForm)
@@ -57,6 +62,40 @@ handleUpload = do
       liftIO $ createDirectoryIfMissing True (uploadBasePath </> mailing_id)
       liftIO $ B.writeFile (uploadBasePath </> mailing_id </> fName) fContent
       json $ object ["url" .= (urlEnv env ++ "/images/" ++ mailing_id ++ "/" ++ fName)]
+
+handleUploadContacts :: Connection -> ActionM ()
+handleUploadContacts conn = do
+  fRes <- getFileFromForm
+  case fRes of
+    Nothing -> json $ object ["error" .= ("error uploading file" :: String)]
+    Just (_, fContent) -> do
+      let res = CSV.decode CSV.HasHeader fContent :: Either String (Vector (Text, Text, Text, Text))
+      case res of
+        Left _ -> redirect "/upload-contacts"
+        Right contacts -> do
+          _ <- liftIO $ mapM_ (DB.addContact conn) (fmap toContact contacts)
+          redirect "/contacts"
+
+handleDownloadContacts :: Connection -> ActionM ()
+handleDownloadContacts conn = do
+  contacts <- liftIO $ DB.getContacts conn
+  setHeader "Content-Type" "text/csv"
+  setHeader "Content-Disposition" "attachment; filename=contacts.csv"
+  raw $ CSV.encode $ ("name", "email", "group", "notes") : (contactToWritable <$> contacts)
+
+contactToWritable :: Contact -> (String, String, String, String)
+contactToWritable (Contact _ name email group notes) =
+  (name, email, group, notes)
+
+toContact :: (Text, Text, Text, Text) -> Contact
+toContact (name, email, group, notes) =
+  Contact
+    { contactId = nil,
+      contactName = unpack name,
+      contactEmail = unpack email,
+      contactGroup = unpack group,
+      contactNotes = unpack notes
+    }
 
 handleUploadDelete :: ActionM ()
 handleUploadDelete = do
@@ -233,6 +272,9 @@ showSelfUpdate conn = do
       case res of
         Just contact -> selfUpdatePage "" contact
         Nothing -> selfUpdateErrorPage
+
+showUploadContacts :: ActionM ()
+showUploadContacts = uploadContactsPage
 
 handleUnsubscribe :: Connection -> ActionM ()
 handleUnsubscribe conn = do

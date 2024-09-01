@@ -8,7 +8,6 @@ A simple personal newsletter mailing app.
 
 - display sends information
 - get caching with npm working in CI actions
-- CSV contacts import / export
 - Email preview
 - sign-in and security
 - DEPLOY!

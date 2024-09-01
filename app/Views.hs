@@ -13,6 +13,7 @@ module Views
     selfUpdateErrorPage,
     selfUpdatePage,
     selfUpdateSuccessPage,
+    uploadContactsPage,
   )
 where
 
@@ -39,11 +40,16 @@ contactsIndexPage :: String -> String -> [Contact] -> ActionM ()
 contactsIndexPage msg search contacts = html $
   renderHtml $
     appTemplate "Contacts" "/contacts" $ do
+      H.div H.! A.class_ "my-2 d-flex flex-row" $ do
+        H.a H.! A.href "/contact" $ do
+          H.button "Add Contact" H.! A.class_ "btn btn-primary me-4"
+        H.a H.! A.href "/upload-contacts" $ do
+          H.button "Upload CSV" H.! A.class_ "btn btn-secondary me-2"
+        H.a H.! A.href "/download-contacts" $ do
+          H.button "Download CSV" H.! A.class_ "btn btn-primary"
       searchBar search
       contactsTable contacts
       unless (search == "") $ H.a "Clear Search" H.! A.href "/contacts"
-      H.div $ do
-        H.a "Add Contact" H.! A.href "/contact/"
       H.p $ H.toHtml msg
 
 contactPage :: Contact -> [(String, Send)] -> ActionM ()
@@ -52,6 +58,20 @@ contactPage contact sends = html $
     appTemplate "Edit Contact" "/contact" $ do
       contactForm contact ("/contact/" ++ show (contactId contact)) "Edit Contact"
       sendsInfo sends
+
+uploadContactsPage :: ActionM ()
+uploadContactsPage = html $
+  renderHtml $
+    appTemplate "Upload Contacts CSV" "/upload-contacts" $ do
+      H.form H.! A.method "POST" H.! A.enctype "multipart/form-data" $ do
+        H.div H.! A.class_ "mb-3" $ do
+          H.label "Contacts CSV file for import" H.! A.for "formFile" H.! A.class_ "form-label"
+          H.input H.! A.class_ "form-control" H.! A.type_ "file" H.! A.id "formFile" H.! A.name "file"
+        H.button "Submit" H.! A.type_ "submit" H.! A.class_ "btn btn-primary"
+      H.p "CSV must be formatted as follows"
+      H.pre $ do
+        H.code $ do
+          "name,email,group,notes\nBob Smith,bob@example.com,,"
 
 mailingPage :: Mailing -> [Send] -> ActionM ()
 mailingPage mailing sends = html $

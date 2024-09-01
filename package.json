@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "A simple personal newsletter mailing app.",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:adueck/haskell-mailer.git"
