@@ -40,7 +40,7 @@ Then run the app using cabal
 $ cabal run
 ```
 
-This will launch a dev server at `http://localhost:8080`. Postgress and mailpit will need to be running for dev.
+This will launch a dev server at `http://localhost:8080`. Postgres and mailpit will need to be running for dev.
 
 ## End to end testing
 
