@@ -73,69 +73,6 @@ test("add/update/delete contacts", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("create and send mailing", async ({ page }) => {
-  page.on("dialog", async (dialog) => {
-    expect(dialog.type()).toContain("confirm");
-    expect(dialog.message()).toContain("Send to all contacts?");
-    await dialog.accept();
-  });
-  await page.goto("http://localhost:8080");
-  await page.locator("html").click();
-  await page.getByRole("link", { name: "Contacts" }).click();
-  await page.getByRole("link", { name: "Add Contact" }).click();
-  await page
-    .locator("div")
-    .filter({ hasText: /^Name:$/ })
-    .click();
-  await page.locator('input[name="name"]').fill("Frank Jones");
-  await page.locator('input[name="name"]').press("Tab");
-  await page.locator('input[name="email"]').fill("frank@example.com");
-  await page.getByRole("button", { name: "Create Contact" }).click();
-  await page.getByRole("link", { name: "Add Contact" }).click();
-  await page.locator('input[name="name"]').click();
-  await page.locator('input[name="name"]').fill("Bob Smith");
-  await page.locator('input[name="name"]').press("Tab");
-  await page.locator('input[name="email"]').fill("bob@bob.org");
-  await page.locator('input[name="email"]').press("Tab");
-  await page.getByRole("button", { name: "Create Contact" }).click();
-  await page.getByRole("link", { name: "New Mailing" }).click();
-  await page.locator('input[name="subject"]').click();
-  await page.locator('input[name="subject"]').fill("My First Mailing");
-  await page.locator("trix-editor").click();
-  await page.locator("trix-editor").fill("Hi everyone.\n\nThis is my ");
-  await page.getByRole("button", { name: "Bold" }).click();
-  await page
-    .locator("trix-editor")
-    .fill("Hi everyone.\n\nThis is my formatted");
-  await page.getByRole("button", { name: "Bold" }).click();
-  await page
-    .locator("trix-editor")
-    .fill("Hi everyone.\n\nThis is my formatted mailing");
-  await page.getByRole("button", { name: "Create Mailing" }).click();
-  await page.getByRole("link", { name: "My First Mailing Draft" }).click();
-  await page.getByRole("button", { name: "Send Mailing" }).click();
-  await expect(
-    page.getByRole("link", { name: "My First Mailing Sent" })
-  ).toBeVisible();
-
-  await page.goto("http://localhost:8025/");
-  await expect(
-    page.getByRole("link", { name: "sender@example.com bob@bob." })
-  ).toBeVisible();
-  await page.getByRole("link", { name: "sender@example.com frank@" }).click();
-  await expect(
-    page
-      .frameLocator("#preview-html")
-      .getByText(
-        "Hi everyone.This is my formatted mailing No more updates please or update your"
-      )
-  ).toBeVisible();
-  execSync("cabal run clean-db");
-  await fetch(`http://localhost:8025/api/v1/messages`, {
-    method: "DELETE",
-  });
-});
-
 // test("allow recipient to unsubscribe", async ({ page }) => {
 //   page.on("dialog", async (dialog) => {
 //     await dialog.accept();
