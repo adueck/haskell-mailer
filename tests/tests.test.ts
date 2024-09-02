@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { execSync } from "node:child_process";
 import * as cheerio from "cheerio";
+import { stringify } from "csv-stringify/sync";
+import { parse } from "csv-parse/sync";
+import * as fs from "fs";
 
 test.describe.configure({ mode: "serial" });
 
@@ -14,9 +17,6 @@ async function resetState() {
 test.beforeEach(resetState);
 
 test.afterEach(resetState);
-
-// TODO test:
-//  - uploading and downloading contacts CSV
 
 test("add/update/delete contacts", async ({ page }) => {
   page.on("dialog", async (dialog) => {
@@ -75,6 +75,64 @@ test("add/update/delete contacts", async ({ page }) => {
   await expect(
     page.getByRole("cell", { name: "from accounting" })
   ).toBeVisible();
+});
+
+test("upload and download contats CSV", async ({ page }) => {
+  page.on("dialog", async (dialog) => {
+    expect(dialog.type()).toContain("confirm");
+    expect(dialog.message()).toContain("Delete contact?");
+    await dialog.accept();
+  });
+  await page.goto("http://localhost:8080/");
+  await page.getByRole("link", { name: "Contacts" }).click();
+  await page.getByRole("button", { name: "Add Contact" }).click();
+  await page.locator('input[name="name"]').click();
+  await page.locator('input[name="name"]').fill("Bill J");
+  await page.locator('input[name="name"]').press("Tab");
+  await page.locator('input[name="email"]').fill("bill@bill.com");
+  await page.locator('input[name="email"]').press("Tab");
+  await page.locator('input[name="group"]').fill("friends");
+  await page.locator('input[name="group"]').press("Tab");
+  await page.locator('input[name="notes"]').fill("from school");
+  await page.getByRole("button", { name: "Create Contact" }).click();
+  const csvData = [
+    ["name", "email", "group", "notes"],
+    ["joe abc", "abc@joe.com", "", "added later"],
+    ["frank f", "frank@example.co", "carpool", ""],
+    ["frank g", "frankg@example.com", "work", "in accounting"],
+  ];
+  const csvContent = stringify(csvData);
+  const csvFilePath = "csv-sample.csv";
+  fs.writeFileSync(csvFilePath, csvContent);
+  await page.goto("http://localhost:8080/");
+  await page.getByRole("link", { name: "Contacts" }).click();
+  await page.getByRole("button", { name: "Upload CSV" }).click();
+  await page.getByLabel("Contacts CSV file for import").click();
+  await page
+    .getByLabel("Contacts CSV file for import")
+    .setInputFiles(csvFilePath);
+  await page.getByRole("button", { name: "Submit" }).click();
+  for (const row of csvData.slice(1)) {
+    for (const name of row) {
+      if (name) {
+        await expect(page.getByRole("cell", { name })).toBeVisible();
+      }
+    }
+  }
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download CSV" }).click();
+  const download = await downloadPromise;
+  const fn = download.suggestedFilename();
+  expect(fn).toBe("contacts.csv");
+  await download.saveAs(fn);
+  const records = parse(fs.readFileSync(fn));
+  expect(records).toEqual([
+    csvData[0],
+    ["Bill J", "bill@bill.com", "friends", "from school"],
+    ...csvData.slice(1),
+  ]);
+  fs.rmSync(csvFilePath);
+  fs.rmSync(fn);
 });
 
 test("create and send mailing", async ({ page }) => {
