@@ -14,6 +14,11 @@ test.beforeEach(resetState);
 
 test.afterEach(resetState);
 
+// TODO test:
+//  - create draft / send mailing
+//  - allow contacts to unsubscribe
+//  - allow contacts to update contact info
+
 test("add/update/delete contacts", async ({ page }) => {
   page.on("dialog", async (dialog) => {
     expect(dialog.type()).toContain("confirm");
