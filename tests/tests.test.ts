@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { execSync } from "node:child_process";
+import * as cheerio from "cheerio";
 
 test.describe.configure({ mode: "serial" });
 
@@ -15,7 +16,6 @@ test.beforeEach(resetState);
 test.afterEach(resetState);
 
 // TODO test:
-//  - allow contacts to unsubscribe
 //  - allow contacts to update contact info
 //  - uploading and downloading contacts CSV
 
@@ -101,7 +101,9 @@ test("create and send mailing", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Mailings" })).toBeVisible();
   await page.getByRole("link", { name: "My Test Draft" }).click();
   await page.getByRole("button", { name: "Send Mailing" }).click();
-  await sleep(500);
+  await sleep(300);
+  // need to use mailpit api here because for some reason the mailpit GUI
+  // isn't working well with Playwright in CI / GitHub Actions
   const msgSummary = (
     await (await fetch("http://localhost:8025/api/v1/messages")).json()
   ).messages[0];
@@ -113,6 +115,23 @@ test("create and send mailing", async ({ page }) => {
   expect(msg.Subject).toBe("My Test");
   expect(msg.Text).toContain("Hi there");
   expect(msg.HTML).toContain("Hi there");
+  const $ = cheerio.load(msg.HTML);
+  // also check that unsubscribe link works
+  const unsubscribeLink = $('a:contains("No more updates please")').attr(
+    "href"
+  );
+  await page.goto(unsubscribeLink);
+  await page.locator("#unsubscribe-box").check();
+  await page.getByRole("button", { name: "Unsubscribe" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Unsubscribed" })
+  ).toBeVisible();
+  await page.goto("http://localhost:8080/");
+  await page.getByRole("link", { name: "Contacts" }).click();
+  await expect(page.getByRole("cell", { name: "Bill B" })).not.toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: "bill@b.com" })
+  ).not.toBeVisible();
 });
 
 function sleep(ms: number) {
