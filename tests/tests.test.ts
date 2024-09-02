@@ -15,7 +15,6 @@ test.beforeEach(resetState);
 test.afterEach(resetState);
 
 // TODO test:
-//  - create draft / send mailing
 //  - allow contacts to unsubscribe
 //  - allow contacts to update contact info
 
@@ -101,26 +100,18 @@ test("create and send mailing", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Mailings" })).toBeVisible();
   await page.getByRole("link", { name: "My Test Draft" }).click();
   await page.getByRole("button", { name: "Send Mailing" }).click();
-  await sleep(1000);
-  const res = await (
-    await fetch("http://localhost:8025/api/v1/messages")
+  await sleep(500);
+  const msgSummary = (
+    await (await fetch("http://localhost:8025/api/v1/messages")).json()
+  ).messages[0];
+  expect(msgSummary.To[0].Name).toBe("Bill B");
+  expect(msgSummary.To[0].Address).toBe("bill@b.com");
+  const msg = await (
+    await fetch(`http://localhost:8025/api/v1/message/${msgSummary.ID}`)
   ).json();
-  console.log({ res: JSON.stringify(res) });
-  await page.goto("http://localhost:8025/");
-  await page
-    .getByRole("link", { name: "sender@example.com bill@b.com" })
-    .click();
-  await expect(
-    page.frameLocator("#preview-html").getByText("Hi there")
-  ).toBeVisible();
-  await expect(
-    page.frameLocator("#preview-html").getByText("Hi there")
-  ).toBeVisible();
-  await expect(
-    page.frameLocator("#preview-html").getByText("Hi there")
-  ).toBeVisible();
-  await expect(page.getByText("My Test")).toBeVisible();
-  await page.goto("http://localhost:8025/view/mkzE7D3Wc6WhUbXLzEYSBq");
+  expect(msg.Subject).toBe("My Test");
+  expect(msg.Text).toContain("Hi there");
+  expect(msg.HTML).toContain("Hi there");
 });
 
 function sleep(ms: number) {
