@@ -47,5 +47,5 @@ This will launch a dev server at `http://localhost:8080`. Postgres and mailpit w
 Requires [Mailpit](https://mailpit.axllent.org/) to be installed in path OR to be running on `localhost:8025` (API) and `localhost:1025` (SMTP).
 
 ```
-$ npm 
+$ npm run test
 ```
