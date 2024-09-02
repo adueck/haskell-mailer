@@ -16,7 +16,6 @@ test.beforeEach(resetState);
 test.afterEach(resetState);
 
 // TODO test:
-//  - allow contacts to update contact info
 //  - uploading and downloading contacts CSV
 
 test("add/update/delete contacts", async ({ page }) => {
@@ -104,9 +103,10 @@ test("create and send mailing", async ({ page }) => {
   await sleep(300);
   // need to use mailpit api here because for some reason the mailpit GUI
   // isn't working well with Playwright in CI / GitHub Actions
-  const msgSummary = (
-    await (await fetch("http://localhost:8025/api/v1/messages")).json()
-  ).messages[0];
+  const res = await (
+    await fetch("http://localhost:8025/api/v1/messages")
+  ).json();
+  const msgSummary = res.messages[0];
   expect(msgSummary.To[0].Name).toBe("Bill B");
   expect(msgSummary.To[0].Address).toBe("bill@b.com");
   const msg = await (
@@ -116,10 +116,44 @@ test("create and send mailing", async ({ page }) => {
   expect(msg.Text).toContain("Hi there");
   expect(msg.HTML).toContain("Hi there");
   const $ = cheerio.load(msg.HTML);
-  // also check that unsubscribe link works
-  const unsubscribeLink = $('a:contains("No more updates please")').attr(
+  // test user update of contact info
+  const updateContactLink = $(`a:contains("update your contact info")`).attr(
     "href"
   );
+  const unsubscribeLink = $(`a:contains("No more updates please")`).attr(
+    "href"
+  );
+  await page.goto(updateContactLink);
+  await expect(
+    page.getByRole("heading", { name: "Update Contact Info" })
+  ).toBeVisible();
+  await page.getByLabel("Name").click();
+  await page.getByLabel("Name").fill("Bill J");
+  await page.locator('input[name="email"]').click();
+  await page.locator('input[name="email"]').press("ArrowLeft");
+  await page.locator('input[name="email"]').press("ArrowLeft");
+  await page.locator('input[name="email"]').press("ArrowLeft");
+  await page.locator('input[name="email"]').press("ArrowLeft");
+  await page.locator('input[name="email"]').fill("bill@j.com");
+  await page.getByRole("button", { name: "Update" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your contact info has been" })
+  ).toBeVisible();
+  await expect(page.getByText("Name: Bill J")).toBeVisible();
+  await expect(page.getByText("Email: bill@j.com")).toBeVisible();
+  await page.getByRole("link", { name: "Made a mistake?" }).click();
+  await page.getByLabel("Name").click();
+  await page.getByLabel("Name").fill("Bill K");
+  await page.getByRole("button", { name: "Update" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your contact info has been" })
+  ).toBeVisible();
+  await expect(page.getByText("Name: Bill K")).toBeVisible();
+  await page.goto("http://localhost:8080/contacts");
+  await page.goto("http://localhost:8080/contacts");
+  await expect(page.getByRole("cell", { name: "Bill K" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "bill@j.com" })).toBeVisible();
+  // also check that unsubscribe link works
   await page.goto(unsubscribeLink);
   await page.locator("#unsubscribe-box").check();
   await page.getByRole("button", { name: "Unsubscribe" }).click();
@@ -128,9 +162,9 @@ test("create and send mailing", async ({ page }) => {
   ).toBeVisible();
   await page.goto("http://localhost:8080/");
   await page.getByRole("link", { name: "Contacts" }).click();
-  await expect(page.getByRole("cell", { name: "Bill B" })).not.toBeVisible();
+  await expect(page.getByRole("cell", { name: "Bill K" })).not.toBeVisible();
   await expect(
-    page.getByRole("cell", { name: "bill@b.com" })
+    page.getByRole("cell", { name: "bill@j.com" })
   ).not.toBeVisible();
 });
 

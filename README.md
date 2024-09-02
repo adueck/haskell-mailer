@@ -6,8 +6,6 @@ A simple personal newsletter mailing app.
 
 ### 🚧 TODO: IN PROGRESS
 
-- get cabal caching and caching with npm working in CI actions
-- get testing working in CI
 - Email preview
 - sign-in and security
 - DEPLOY!
