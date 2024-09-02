@@ -101,6 +101,11 @@ test("create and send mailing", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Mailings" })).toBeVisible();
   await page.getByRole("link", { name: "My Test Draft" }).click();
   await page.getByRole("button", { name: "Send Mailing" }).click();
+  await sleep(1000);
+  const res = await (
+    await fetch("http://localhost:8025/api/v1/messages")
+  ).json();
+  console.log({ res: JSON.stringify(res) });
   await page.goto("http://localhost:8025/");
   await page
     .getByRole("link", { name: "sender@example.com bill@b.com" })
@@ -117,3 +122,7 @@ test("create and send mailing", async ({ page }) => {
   await expect(page.getByText("My Test")).toBeVisible();
   await page.goto("http://localhost:8025/view/mkzE7D3Wc6WhUbXLzEYSBq");
 });
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
