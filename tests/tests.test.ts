@@ -17,6 +17,7 @@ test.afterEach(resetState);
 // TODO test:
 //  - allow contacts to unsubscribe
 //  - allow contacts to update contact info
+//  - uploading and downloading contacts CSV
 
 test("add/update/delete contacts", async ({ page }) => {
   page.on("dialog", async (dialog) => {
