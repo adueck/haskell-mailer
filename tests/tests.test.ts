@@ -77,3 +77,43 @@ test("add/update/delete contacts", async ({ page }) => {
     page.getByRole("cell", { name: "from accounting" })
   ).toBeVisible();
 });
+
+test("create and send mailing", async ({ page }) => {
+  page.on("dialog", async (dialog) => {
+    expect(dialog.type()).toContain("confirm");
+    await dialog.accept();
+  });
+  await page.goto("http://localhost:8080/");
+  await page.getByRole("link", { name: "Contacts" }).click();
+  await page.getByRole("button", { name: "Add Contact" }).click();
+  await page.locator('input[name="name"]').click();
+  await page.locator('input[name="name"]').fill("Bill B");
+  await page.locator('input[name="name"]').press("Tab");
+  await page.locator('input[name="email"]').fill("bill@b.com");
+  await page.locator('input[name="email"]').press("Tab");
+  await page.getByRole("button", { name: "Create Contact" }).click();
+  await page.getByRole("link", { name: "New Mailing" }).click();
+  await page.locator('input[name="subject"]').click();
+  await page.locator('input[name="subject"]').fill("My Test");
+  await page.locator("trix-editor").click();
+  await page.locator("trix-editor").fill("Hi there");
+  await page.getByRole("button", { name: "Create Mailing" }).click();
+  await expect(page.getByRole("heading", { name: "Mailings" })).toBeVisible();
+  await page.getByRole("link", { name: "My Test Draft" }).click();
+  await page.getByRole("button", { name: "Send Mailing" }).click();
+  await page.goto("http://localhost:8025/");
+  await page
+    .getByRole("link", { name: "sender@example.com bill@b.com" })
+    .click();
+  await expect(
+    page.frameLocator("#preview-html").getByText("Hi there")
+  ).toBeVisible();
+  await expect(
+    page.frameLocator("#preview-html").getByText("Hi there")
+  ).toBeVisible();
+  await expect(
+    page.frameLocator("#preview-html").getByText("Hi there")
+  ).toBeVisible();
+  await expect(page.getByText("My Test")).toBeVisible();
+  await page.goto("http://localhost:8025/view/mkzE7D3Wc6WhUbXLzEYSBq");
+});
