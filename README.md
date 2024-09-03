@@ -25,6 +25,7 @@ The following environment variables need to be set **for production**:
 - `MYMAILER_DOMAIN`: SMTP domain
 - `MYMAILER_LOGIN`: SMTP login name
 - `MYMAILER_PASSWORD`: SMTP password
+- `MYMAILER_PORT`: SMTP port (defaults to 465 if `MYMAILER_DOMAIN` is set)
 - `MYMAILER_DB`: Postgres DB name
 - `MYMAILER_DB_HOST`: Postgres DB host
 - `MYMAILER_DB_PASSWORD`: Postgres DB password

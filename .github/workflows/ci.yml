@@ -74,3 +74,11 @@ jobs:
           npx playwright install --with-deps
           cabal build all
           npm run test
+      - name: deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: whoami
