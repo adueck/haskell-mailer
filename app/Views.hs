@@ -38,7 +38,7 @@ loginPage =
           H.form H.! A.method "POST" $ do
             H.div H.! A.class_ "my-4" $ do
               H.label "Password" H.! A.for "password" H.! A.class_ "form-label"
-              H.input H.! A.type_ "password" H.! A.class_ "form-control" H.! A.id "password"
+              H.input H.! A.name "password" H.! A.type_ "password" H.! A.class_ "form-control" H.! A.id "password"
               H.button "Submit" H.! A.class_ "btn btn-primary my-3" H.! A.type_ "submit"
 
 homePage :: [Mailing] -> ActionM ()
