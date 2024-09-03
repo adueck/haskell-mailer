@@ -32,7 +32,7 @@ loginPage :: ActionM ()
 loginPage =
   html $
     renderHtml $ do
-      H.h1 "Login"
+      H.h1 "Login Here"
       H.form H.! A.method "POST" $ do
         H.input H.! A.type_ "password" H.! A.name "password"
         H.input H.! A.type_ "submit" H.! A.value "Submit"

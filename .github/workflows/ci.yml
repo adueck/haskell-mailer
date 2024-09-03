@@ -81,4 +81,8 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          script: whoami
+          script: |
+            cd apps/live/haskell-mailer/
+            git pull
+            cd ~
+            pm2 restart haskell-mailer
