@@ -85,8 +85,9 @@ webApp session conn = Sc.scottyApp $ do
   middleware simpleCors
   middleware $ staticPolicy (noDots >-> addBase "static")
   middleware $ withAuth session
-  get "/login" H.showLogin
+  get "/login" (H.showLogin session)
   post "/login" (H.handleLogin session)
+  post "/logout" (H.handleLogout session)
   -- Client-facing HTTP Handlers
   --  (web app)
   get "/" (H.showHome conn)

@@ -31,11 +31,15 @@ import Web.Scotty
 loginPage :: ActionM ()
 loginPage =
   html $
-    renderHtml $ do
-      H.h1 "Login Here"
-      H.form H.! A.method "POST" $ do
-        H.input H.! A.type_ "password" H.! A.name "password"
-        H.input H.! A.type_ "submit" H.! A.value "Submit"
+    renderHtml $
+      baseTemplate "Login" $ do
+        H.div H.! A.class_ "container py-4" H.! A.style "max-width: 500px" $ do
+          H.h1 "Login"
+          H.form H.! A.method "POST" $ do
+            H.div H.! A.class_ "my-4" $ do
+              H.label "Password" H.! A.for "password" H.! A.class_ "form-label"
+              H.input H.! A.type_ "password" H.! A.class_ "form-control" H.! A.id "password"
+              H.button "Submit" H.! A.class_ "btn btn-primary my-3" H.! A.type_ "submit"
 
 homePage :: [Mailing] -> ActionM ()
 homePage mailings = html $
@@ -216,8 +220,11 @@ appTemplate title path children =
           $ do
             H.span "" H.! A.class_ "navbar-toggler-icon"
         H.div H.! A.class_ "collapse navbar-collapse" H.! A.id "navbarSupportedContent" $ do
-          H.ul H.! A.class_ "navbar-nav" $ do
+          H.ul H.! A.class_ "navbar-nav me-auto" $ do
             mapM_ (navLink path) [("Contacts", "/contacts"), ("New Mailing", "/mailing")]
+          H.form H.! A.method "POST" H.! A.action "/logout" H.! A.class_ "form-inline my-2" $ do
+            H.a H.! A.href "/user" $ do
+              H.button "Logout" H.! A.class_ "btn btn-secondary btn-sm my-2 my-sm-0" H.! A.type_ "submit"
     H.div H.! A.class_ "container py-4" $ do
       H.h2 (H.toHtml title) H.! A.class_ "mb-4"
       children

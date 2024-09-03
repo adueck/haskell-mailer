@@ -26,6 +26,7 @@ module Handlers
     handleUploadContacts,
     handleDownloadContacts,
     handleLogin,
+    handleLogout,
   )
 where
 
@@ -113,13 +114,33 @@ handleUploadDelete = do
   liftIO $ when fileExists $ removeFile path
   json $ object ["ok" .= True]
 
-showLogin :: ActionM ()
-showLogin = do
+showLogin :: Vault.Key (Session IO String String) -> ActionM ()
+showLogin session = do
   env <- liftIO getAppEnv
-  if authPasswordEnv env == ""
+  loggedIn <- isLoggedIn session
+  if loggedIn || authPasswordEnv env == ""
     then
       redirect "/"
     else loginPage
+
+isLoggedIn :: Vault.Key (Session IO String String) -> ActionM Bool
+isLoggedIn session = do
+  req <- request
+  case Vault.lookup session (Wai.vault req) of
+    Just (sessionLookup, _) -> do
+      u <- liftIO $ sessionLookup "u"
+      return $ "logged in" `elem` u
+    Nothing -> return False
+
+handleLogout :: Vault.Key (Session IO String String) -> ActionM ()
+handleLogout session = do
+  req <- request
+  _ <- case Vault.lookup session (Wai.vault req) of
+    Just (_, sessionInsert) -> do
+      liftIO $ sessionInsert "u" "logged out"
+      redirect "/login"
+    Nothing -> redirect "/login"
+  json $ object ["ok" .= True]
 
 handleLogin :: Vault.Key (Session IO String String) -> ActionM ()
 handleLogin session = do
