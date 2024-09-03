@@ -74,6 +74,7 @@ withAuth session app req respond = do
     else case Vault.lookup session (Wai.vault req) of
       Just (sessionLookup, _) -> do
         u <- sessionLookup "u"
+        print u
         if "logged in" `elem` u
           then app req respond
           else
