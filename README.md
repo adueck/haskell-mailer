@@ -7,7 +7,6 @@ A simple personal newsletter mailing app.
 ### 🚧 TODO: IN PROGRESS
 
 - Email preview
-- DEPLOY!
 
 ## Requires
 

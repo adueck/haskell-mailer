@@ -84,5 +84,6 @@ jobs:
           script: |
             cd apps/live/haskell-mailer/
             git pull
+            cabal build haskell-mailer
             cd ~
             pm2 restart haskell-mailer
