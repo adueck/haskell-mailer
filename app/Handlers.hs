@@ -149,8 +149,6 @@ handleLogin session = do
   req <- request
   let pEnv = authPasswordEnv env
   let password = unpack $ fromMaybe "" $ lookup "password" ps
-  liftIO $ putStrLn ("required p is " ++ pEnv)
-  liftIO $ putStrLn ("given p is " ++ password)
   _ <- case Vault.lookup session (Wai.vault req) of
     Just (_, sessionInsert) -> do
       if password == pEnv

@@ -86,4 +86,5 @@ jobs:
             git pull
             cabal build haskell-mailer
             cd ~
-            pm2 restart haskell-mailer
+            pm2 delete haskell-mailer
+            pm2 start haskell-mailer
