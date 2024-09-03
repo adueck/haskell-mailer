@@ -43,12 +43,7 @@ main = do
       ( withSession
           store
           (fromString "session")
-          ( defaultSetCookie
-              { setCookieHttpOnly = True,
-                setCookieSecure = True,
-                setCookieMaxAge = Just (secondsToDiffTime 2 * 86400)
-              }
-          )
+          defaultSetCookie
           session
           sapp
       )
