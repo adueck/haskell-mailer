@@ -20,7 +20,8 @@ data AppEnv
     passwordEnv :: String,
     dbEnv :: String,
     dbHostEnv :: String,
-    dbPasswordEnv :: String
+    dbPasswordEnv :: String,
+    authPasswordEnv :: String
   }
   deriving (Show, Eq)
 

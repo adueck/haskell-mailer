@@ -19,6 +19,7 @@ getAppEnv = do
   dbR <- lookupEnv "MYMAILER_DB"
   dbHostR <- lookupEnv "MYMAILER_DB_HOST"
   dbPasswordR <- lookupEnv "MYMAILER_DB_PASSWORD"
+  authPasswordR <- lookupEnv "MYMAILER_AUTH_PASSWORD"
   return
     AppEnv
       { urlEnv = fromMaybe "http://localhost:8080" urlR,
@@ -30,5 +31,6 @@ getAppEnv = do
         passwordEnv = fromMaybe "" passwordR,
         dbEnv = fromMaybe "postgres" dbR,
         dbHostEnv = fromMaybe "localhost" dbHostR,
-        dbPasswordEnv = fromMaybe "postgres" dbPasswordR
+        dbPasswordEnv = fromMaybe "postgres" dbPasswordR,
+        authPasswordEnv = fromMaybe "" authPasswordR
       }

@@ -101,7 +101,11 @@ executable haskell-mailer
         wai,
         wai-extra,
         wai-websockets,
-        zenacy-html
+        wai-session,
+        zenacy-html,
+        vault,
+        cookie,
+        time
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -151,7 +155,11 @@ executable clean-db
         wai,
         wai-extra,
         wai-websockets,
-        zenacy-html
+        wai-session,
+        zenacy-html,
+        vault,
+        cookie,
+        time
 
     -- Directories containing source files.
     hs-source-dirs:   app

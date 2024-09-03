@@ -13,6 +13,7 @@ module Handlers
     createContact,
     createMailing,
     showHome,
+    showLogin,
     handleSendMailing,
     handleUploadDelete,
     handleUpload,
@@ -24,9 +25,11 @@ module Handlers
     showUploadContacts,
     handleUploadContacts,
     handleDownloadContacts,
+    handleLogin,
   )
 where
 
+import Control.Concurrent (threadDelay)
 import Control.Concurrent.Async (async)
 import Control.Monad (when)
 import Control.Monad.IO.Class
@@ -34,14 +37,18 @@ import DB qualified
 import Data.Aeson
 import Data.ByteString.Lazy qualified as B
 import Data.Csv qualified as CSV
+import Data.Maybe (fromMaybe)
 import Data.Text (Text, unpack)
 import Data.Text.Lazy qualified as T
 import Data.UUID.Types
+import Data.Vault.Lazy qualified as Vault
 import Data.Vector (Vector)
 import Database.PostgreSQL.Simple
 import EnvBuddy
 import FileHelpers (getFileFromForm)
 import Mailer as M
+import Network.Wai qualified as Wai
+import Network.Wai.Session (Session, withSession)
 import System.Directory
 import System.FilePath ((</>))
 import Types
@@ -104,6 +111,33 @@ handleUploadDelete = do
   let path = uploadBasePath </> mailing_id </> filename
   fileExists <- liftIO $ doesFileExist path
   liftIO $ when fileExists $ removeFile path
+  json $ object ["ok" .= True]
+
+showLogin :: ActionM ()
+showLogin = do
+  env <- liftIO getAppEnv
+  if authPasswordEnv env == ""
+    then
+      redirect "/"
+    else loginPage
+
+handleLogin :: Vault.Key (Session IO String String) -> ActionM ()
+handleLogin session = do
+  env <- liftIO getAppEnv
+  ps <- formParams
+  req <- request
+  let pEnv = authPasswordEnv env
+  let password = unpack $ fromMaybe "" $ lookup "password" ps
+  _ <- case Vault.lookup session (Wai.vault req) of
+    Just (_, sessionInsert) -> do
+      if password == pEnv
+        then do
+          liftIO $ sessionInsert "u" "logged in"
+          redirect "/"
+        else do
+          liftIO $ threadDelay $ 1 * 2000000
+          redirect "/login"
+    Nothing -> redirect "/login"
   json $ object ["ok" .= True]
 
 showHome :: Connection -> ActionM ()

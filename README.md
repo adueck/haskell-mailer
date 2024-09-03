@@ -29,8 +29,9 @@ The following environment variables need to be set **for production**:
 - `MYMAILER_DB`: Postgres DB name
 - `MYMAILER_DB_HOST`: Postgres DB host
 - `MYMAILER_DB_PASSWORD`: Postgres DB password
+- `MYMAILER_AUTH_PASSWORD`: Password for app login/auth (unprotected if left blank)
 
-For development and testing, they can be left blank.
+For development and testing, these can all be left blank.
 
 Then run the app using cabal
 

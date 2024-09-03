@@ -14,6 +14,7 @@ module Views
     selfUpdatePage,
     selfUpdateSuccessPage,
     uploadContactsPage,
+    loginPage,
   )
 where
 
@@ -26,6 +27,15 @@ import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as A
 import Types
 import Web.Scotty
+
+loginPage :: ActionM ()
+loginPage =
+  html $
+    renderHtml $ do
+      H.h1 "Login"
+      H.form H.! A.method "POST" $ do
+        H.input H.! A.type_ "password" H.! A.name "password"
+        H.input H.! A.type_ "submit" H.! A.value "Submit"
 
 homePage :: [Mailing] -> ActionM ()
 homePage mailings = html $
