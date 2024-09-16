@@ -67,10 +67,8 @@ handleUpload = do
   case fRes of
     Nothing -> json $ object ["error" .= ("error uploading file" :: String)]
     Just (fName, fContent) -> do
-      liftIO $ putStrLn "Got uploaded file"
       liftIO $ createDirectoryIfMissing True (uploadBasePath </> mailing_id)
       liftIO $ B.writeFile (uploadBasePath </> mailing_id </> fName) fContent
-      liftIO $ putStrLn "saved file"
       json $ object ["url" .= (urlEnv env ++ "/images/" ++ mailing_id ++ "/" ++ fName)]
 
 handleUploadContacts :: Connection -> ActionM ()

@@ -52,8 +52,6 @@ function uploadFileAttachment(attachment) {
   }
 
   function setAttributes(attributes) {
-    console.log("setting attributes here");
-    console.log({ attributes });
     attachment.setAttributes(attributes);
   }
 
@@ -74,9 +72,7 @@ function uploadFile(file, progressCallback, successCallback, failureCallback) {
   });
 
   xhr.addEventListener("load", function (event) {
-    console.log({ xhr });
     if (xhr.status == 200) {
-      console.log("got it");
       const resp = JSON.parse(xhr.response);
       var attributes = {
         url: resp.url,
