@@ -72,6 +72,7 @@ function uploadFile(file, progressCallback, successCallback, failureCallback) {
   });
 
   xhr.addEventListener("load", function (event) {
+    console.log({ xhr });
     if (xhr.status == 200) {
       const resp = JSON.parse(xhr.response);
       var attributes = {
