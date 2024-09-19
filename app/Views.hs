@@ -320,20 +320,22 @@ sendsInfo sends = do
             successes
 
 contactsTable :: [Contact] -> H.Html
-contactsTable contacts = H.table H.! A.class_ "table" $ do
-  H.tr $ do
-    H.th "Name" H.! A.scope "col"
-    H.th "Email" H.! A.scope "col"
-    H.th "Group" H.! A.scope "col"
-    H.th "Notes" H.! A.scope "col"
-  mapM_
-    ( \(Contact _id contactName contactEmail contactGroup contactNotes) ->
-        H.tr $ do
-          H.td $ do
-            H.a H.! A.href (stringValue ("/contact/" ++ show _id)) $ do
-              H.toHtml contactName
-          H.td $ H.toHtml contactEmail
-          H.td $ H.toHtml contactGroup
-          H.td $ H.toHtml contactNotes
-    )
-    contacts
+contactsTable contacts = do
+  H.div (H.toHtml (show (length contacts) ++ " contacts"))
+  H.table H.! A.class_ "table" $ do
+    H.tr $ do
+      H.th "Name" H.! A.scope "col"
+      H.th "Email" H.! A.scope "col"
+      H.th "Group" H.! A.scope "col"
+      H.th "Notes" H.! A.scope "col"
+    mapM_
+      ( \(Contact _id contactName contactEmail contactGroup contactNotes) ->
+          H.tr $ do
+            H.td $ do
+              H.a H.! A.href (stringValue ("/contact/" ++ show _id)) $ do
+                H.toHtml contactName
+            H.td $ H.toHtml contactEmail
+            H.td $ H.toHtml contactGroup
+            H.td $ H.toHtml contactNotes
+      )
+      contacts

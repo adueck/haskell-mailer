@@ -66,19 +66,24 @@ wsapp pending = do
 
 withAuth :: Vault.Key (Session IO String String) -> Wai.Middleware
 withAuth session app req respond = do
-  env <- getAppEnv
-  let pswd = authPasswordEnv env
-  if null pswd || (show (Wai.pathInfo req) == "[\"login\"]")
-    then
+  -- no auth for routes where user changes their contact info
+  if "change" `elem` Wai.pathInfo req || "enough" `elem` Wai.pathInfo req
+    then do
       app req respond
-    else case Vault.lookup session (Wai.vault req) of
-      Just (sessionLookup, _) -> do
-        u <- sessionLookup "u"
-        if "logged in" `elem` u
-          then app req respond
-          else
-            app req $ respond . Wai.mapResponseStatus (const status302) . Wai.mapResponseHeaders (\hs -> ("Location", "/login") : hs)
-      Nothing -> app req respond
+    else do
+      env <- getAppEnv
+      let pswd = authPasswordEnv env
+      if null pswd || (show (Wai.pathInfo req) == "[\"login\"]")
+        then
+          app req respond
+        else case Vault.lookup session (Wai.vault req) of
+          Just (sessionLookup, _) -> do
+            u <- sessionLookup "u"
+            if "logged in" `elem` u
+              then app req respond
+              else
+                app req $ respond . Wai.mapResponseStatus (const status302) . Wai.mapResponseHeaders (\hs -> ("Location", "/login") : hs)
+          Nothing -> app req respond
 
 webApp :: Vault.Key (Session IO String String) -> Connection -> IO Wai.Application
 webApp session conn = Sc.scottyApp $ do
@@ -113,4 +118,3 @@ webApp session conn = Sc.scottyApp $ do
   post "/enough/:_id" (H.handleUnsubscribe conn)
   get "/change/:_id" (H.showSelfUpdate conn)
   post "/change/:_id" (H.handleSelfUpdate conn)
-  post "/test-send" (H.handleSendM conn)

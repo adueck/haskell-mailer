@@ -21,7 +21,6 @@ module Handlers
     handleUnsubscribe,
     showSelfUpdate,
     handleSelfUpdate,
-    handleSendM,
     showUploadContacts,
     handleUploadContacts,
     handleDownloadContacts,
@@ -232,17 +231,6 @@ showMailing conn = do
           redirect "/mailings"
         Just m -> do
           mailingPage m sends
-
-handleSendM :: Connection -> ActionM ()
-handleSendM conn = do
-  mailing <- liftIO $ DB.getFirstMailing conn
-  contacts <- liftIO $ DB.getContacts conn
-  case mailing of
-    Just m -> do
-      res <- liftIO $ M.sendMailingP conn m contacts
-      json $ object ["res" .= show res]
-    Nothing -> do
-      json $ object ["res" .= False]
 
 handleSendMailing :: Connection -> ActionM ()
 handleSendMailing conn = do
