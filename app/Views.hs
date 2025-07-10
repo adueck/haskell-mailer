@@ -96,6 +96,10 @@ mailingPage mailing sends = html $
         (mailingSubject mailing, mailingContent mailing, mailingPublished mailing)
         ("/mailing/" ++ show (mailingId mailing))
         "Save"
+      H.h4 "Send one off mailing (in saved state)"
+      H.form H.! A.id "mailing-oneoff" H.! A.action (stringValue ("/send/mailing-oneoff/" ++ toString (mailingId mailing))) H.! A.method "POST" H.! A.class_ "row g-3" H.! A.style "max-width: 700px" $ do
+        H.input H.! A.class_ "form-control" H.! A.type_ "email" H.! A.name "email" H.! A.required "true"
+        H.button "Send One-Off" H.! A.type_ "submit" H.! A.class_ "btn btn-primary"
       H.h4 $ H.toHtml $ "Sent to " ++ show (length sends) ++ " contacts"
       sendsInfo (map ("",) sends)
 

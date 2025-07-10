@@ -26,6 +26,7 @@ module Handlers
     handleDownloadContacts,
     handleLogin,
     handleLogout,
+    handleSendOneOffMailing,
   )
 where
 
@@ -247,6 +248,47 @@ handleSendMailing conn = do
         Just d -> do
           _ <- liftIO $ async $ M.sendMailingP conn d contacts
           redirect "/"
+
+handleSendOneOffMailing :: Connection -> ActionM ()
+handleSendOneOffMailing conn = do
+  _idS :: String <- pathParam "_id"
+  case fromString _idS of
+    Nothing -> redirect "/"
+    Just _id -> do
+      contact <- contactFromOneOffParams <$> formParams
+      liftIO $ print contact
+      case contact of
+        Nothing -> do
+          redirect "/"
+        Just c -> do
+          liftIO $ putStrLn $ "Sending to contact " ++ contactEmail c
+          mailing <- liftIO $ DB.getMailingById conn _id
+          case mailing of
+            Nothing -> do
+              redirect "/"
+            Just d -> do
+              _ <- liftIO $ async $ M.sendOneOffMailing d c
+              redirect "/"
+
+contactFromOneOffParams :: [Param] -> Maybe Contact
+contactFromOneOffParams p = do
+  email <- unpack <$> lookup "email" p
+  -- TODO: get a better thing for a placeholder ID (we don't actually need to use this)
+  let placeholderIdT = fromString "80e7128e-be99-4717-b2ee-69b382f1f83f"
+  case placeholderIdT of
+    Nothing -> Nothing
+    Just placeholderId ->
+      if email == ""
+        then Nothing
+        else
+          Just
+            Contact
+              { contactId = placeholderId,
+                contactName = "",
+                contactEmail = email,
+                contactGroup = "",
+                contactNotes = ""
+              }
 
 updateContact :: Connection -> ActionM ()
 updateContact conn = do

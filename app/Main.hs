@@ -113,6 +113,7 @@ webApp session conn = Sc.scottyApp $ do
   delete "/images/:mailing_id/:filename" H.handleUploadDelete
   -- post "/uploads/:filename" (H.deleteUpload)
   post "/send/mailing/:_id" (H.handleSendMailing conn)
+  post "/send/mailing-oneoff/:_id" (H.handleSendOneOffMailing conn)
   post "/mailing/delete/:_id" (H.destroyMailing conn)
   get "/enough/:_id" (H.unsubscribePage conn)
   post "/enough/:_id" (H.handleUnsubscribe conn)

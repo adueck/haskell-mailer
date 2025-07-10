@@ -3,6 +3,7 @@
 module Mailer
   ( sendMailingP,
     sendAdminMail,
+    sendOneOffMailing,
   )
 where
 
@@ -98,6 +99,26 @@ sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
         threadDelay 2000000
         return result
   mapM_ tryOneMailing contacts
+
+sendOneOffMailing :: Mailing -> Contact -> IO ()
+sendOneOffMailing (Mailing mailing_id subj content _ _ _) contact = do
+  env <- getAppEnv
+  let contentU = changeImgTags (DS.pack content)
+  send <- makeSender
+  let makeM = makeMail (senderEnv env) subj
+  -- ugly, clean up flow
+  let makeM2 = do
+        withTemplate <-
+          renderTemplate
+            ("email-templates" </> "foundation.html")
+            [ ("BODY", DS.unpack contentU),
+              ("UNSUBSCRIBE_LINK", urlEnv env ++ "/enough/0"),
+              ("UPDATE_CONTACT_LINK", urlEnv env ++ "/change/0")
+            ]
+        return $ makeM withTemplate contact
+  mail <- makeM2
+  result <- try (send mail) :: IO (Either SomeException ())
+  print result
 
 changeImgTags :: Text -> Text
 changeImgTags html = htmlRenderNodes $ getInsideBody $ htmlMapElem queryHtml (textToNode html)

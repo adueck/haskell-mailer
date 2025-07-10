@@ -20,6 +20,7 @@ module DB
     getFirstMailing,
     getMailingSends,
     getContactSends,
+    toContact,
   )
 where
 
