@@ -274,21 +274,17 @@ contactFromOneOffParams :: [Param] -> Maybe Contact
 contactFromOneOffParams p = do
   email <- unpack <$> lookup "email" p
   -- TODO: get a better thing for a placeholder ID (we don't actually need to use this)
-  let placeholderIdT = fromString "80e7128e-be99-4717-b2ee-69b382f1f83f"
-  case placeholderIdT of
-    Nothing -> Nothing
-    Just placeholderId ->
-      if email == ""
-        then Nothing
-        else
-          Just
-            Contact
-              { contactId = placeholderId,
-                contactName = "",
-                contactEmail = email,
-                contactGroup = "",
-                contactNotes = ""
-              }
+  if email == ""
+    then Nothing
+    else
+      Just
+        Contact
+          { contactId = nil,
+            contactName = "",
+            contactEmail = email,
+            contactGroup = "",
+            contactNotes = ""
+          }
 
 updateContact :: Connection -> ActionM ()
 updateContact conn = do
