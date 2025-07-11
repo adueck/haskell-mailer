@@ -221,12 +221,17 @@ showContact conn = do
 
 showMailing :: Connection -> ActionM ()
 showMailing conn = do
+  liftIO $ putStrLn "Going to show mailing"
   _idS :: String <- pathParam "_id"
+  liftIO $ putStrLn "OK mailing id here"
+  liftIO $ print _idS
   case fromString _idS of
     Nothing -> redirect "/mailings"
     Just _id -> do
       mailing <- liftIO $ DB.getMailingById conn _id
       sends <- liftIO $ DB.getMailingSends conn _id
+      liftIO $ putStrLn "mailing here"
+      liftIO $ print mailing
       case mailing of
         Nothing -> do
           redirect "/mailings"
