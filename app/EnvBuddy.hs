@@ -10,7 +10,8 @@ import Types
 getAppEnv :: IO AppEnv
 getAppEnv = do
   urlR <- lookupEnv "MYMAILER_URL"
-  senderEmailR <- lookupEnv "MYMAILER_SENDER"
+  senderEmailR <- lookupEnv "MYMAILER_SENDER_EMAIL"
+  senderNameR <- lookupEnv "MYMAILER_SENDER_NAME"
   adminEmailR <- lookupEnv "MYMAILER_ADMIN_EMAIL"
   domainR <- lookupEnv "MYMAILER_DOMAIN"
   portR <- lookupEnv "MYMAILER_PORT"
@@ -23,7 +24,8 @@ getAppEnv = do
   return
     AppEnv
       { urlEnv = fromMaybe "http://localhost:8080" urlR,
-        senderEnv = fromMaybe "sender@example.com" senderEmailR,
+        senderEmail = fromMaybe "sender@example.com" senderEmailR,
+        senderName = fromMaybe "Example Name" senderNameR,
         adminEmailEnv = fromMaybe "admin@example.com" adminEmailR,
         domainEnv = fromMaybe "" domainR,
         portEnv = fromMaybe "465" portR,

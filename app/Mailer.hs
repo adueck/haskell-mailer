@@ -33,7 +33,7 @@ sendAdminMail :: String -> String -> IO (Async ())
 sendAdminMail subj body = do
   env <- getAppEnv
   send <- makeSender
-  let mail = makeTextMail (senderEnv env) (adminEmailEnv env) subj body
+  let mail = makeTextMail "HM Admin" (adminEmailEnv env) subj body
   async $ send mail
 
 makeSender :: IO (Mail -> IO ())
@@ -54,10 +54,10 @@ makeTextMail from to subject content =
     (DS.pack subject)
     [Mime.plainPart (DL.pack content)]
 
-makeMail :: String -> String -> Text -> Contact -> Mail
-makeMail from subject content to =
+makeMail :: String -> String -> String -> Text -> Contact -> Mail
+makeMail fromName fromEmail subject content to =
   simpleMail
-    (Address Nothing (DS.pack from))
+    (Address (Just (DS.pack fromName)) (DS.pack fromEmail))
     [contactToAddress to]
     []
     []
@@ -69,7 +69,7 @@ sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
   env <- getAppEnv
   let contentU = changeImgTags (DS.pack content)
   send <- makeSender
-  let makeM = makeMail (senderEnv env) subj
+  let makeM = makeMail (senderName env) (senderName env) subj
   putStrLn "GONING TO START MAILING"
   let tryOneMailing c = do
         putStrLn $ "Will send to " ++ contactEmail c
@@ -105,15 +105,15 @@ sendOneOffMailing (Mailing _ subj content _ _ _) contact = do
   env <- getAppEnv
   let contentU = changeImgTags (DS.pack content)
   send <- makeSender
-  let makeM = makeMail (senderEnv env) subj
+  let makeM = makeMail (senderName env) (senderEmail env) subj
   -- ugly, clean up flow
   let makeM2 = do
         withTemplate <-
           renderTemplate
             ("email-templates" </> "foundation.html")
             [ ("BODY", DS.unpack contentU),
-              ("UNSUBSCRIBE_LINK", urlEnv env ++ "/enough/0"),
-              ("UPDATE_CONTACT_LINK", urlEnv env ++ "/change/0")
+              ("UNSUBSCRIBE_LINK", urlEnv env ++ "/enough/d6803153-d078-43ff-bf1f-64a59cfe205d"),
+              ("UPDATE_CONTACT_LINK", urlEnv env ++ "/change/d6803153-d078-43ff-bf1f-64a59cfe205d")
             ]
         return $ makeM withTemplate contact
   mail <- makeM2

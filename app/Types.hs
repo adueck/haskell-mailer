@@ -12,7 +12,8 @@ import Database.PostgreSQL.Simple.Time (ZonedTimestamp)
 data AppEnv
   = AppEnv
   { urlEnv :: String,
-    senderEnv :: String,
+    senderEmail :: String,
+    senderName :: String,
     adminEmailEnv :: String,
     domainEnv :: String,
     portEnv :: String,
