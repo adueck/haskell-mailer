@@ -101,7 +101,7 @@ sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
   mapM_ tryOneMailing contacts
 
 sendOneOffMailing :: Mailing -> Contact -> IO ()
-sendOneOffMailing (Mailing mailing_id subj content _ _ _) contact = do
+sendOneOffMailing (Mailing _ subj content _ _ _) contact = do
   env <- getAppEnv
   let contentU = changeImgTags (DS.pack content)
   send <- makeSender

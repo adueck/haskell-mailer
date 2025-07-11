@@ -7,7 +7,6 @@ import Control.Monad (forever)
 import DB qualified
 import Data.String (fromString)
 import Data.Text qualified as Text
-import Data.Time.Clock
 import Data.Vault.Lazy qualified as Vault
 import Database.PostgreSQL.Simple
 import EnvBuddy (getAppEnv)

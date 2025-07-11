@@ -49,7 +49,7 @@ import EnvBuddy
 import FileHelpers (getFileFromForm)
 import Mailer as M
 import Network.Wai qualified as Wai
-import Network.Wai.Session (Session, withSession)
+import Network.Wai.Session (Session)
 import System.Directory
 import System.FilePath ((</>))
 import Types

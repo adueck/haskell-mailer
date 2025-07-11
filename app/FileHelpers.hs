@@ -3,7 +3,7 @@ module FileHelpers
   )
 where
 
-import Control.Exception (SomeException (SomeException), try)
+import Control.Exception (SomeException, try)
 import Data.ByteString.Char8 qualified as BS
 import Data.ByteString.Lazy qualified as B
 import Network.Wai.Parse (defaultParseRequestBodyOptions, fileContent, fileName)
