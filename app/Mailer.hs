@@ -15,7 +15,7 @@ import Data.Maybe
 import Data.Text (Text)
 import Data.Text qualified as DS
 import Data.Text.Lazy qualified as DL
-import Data.UUID (UUID, nil, toString)
+import Data.UUID (nil, toString)
 import Database.PostgreSQL.Simple
 import EnvBuddy
 import Network.Mail.Mime (Mail)
@@ -113,8 +113,8 @@ sendOneOffMailing (Mailing _ subj content _ _ _) contact = do
           renderTemplate
             ("email-templates" </> "foundation.html")
             [ ("BODY", DS.unpack contentU),
-              ("UNSUBSCRIBE_LINK", urlEnv env ++ placeholderUUID),
-              ("UPDATE_CONTACT_LINK", urlEnv env ++ placeholderUUID)
+              ("UNSUBSCRIBE_LINK", urlEnv env ++ "/enough/" ++ placeholderUUID),
+              ("UPDATE_CONTACT_LINK", urlEnv env ++ "/change/" ++ placeholderUUID)
             ]
         return $ makeM withTemplate contact
   mail <- makeM2
