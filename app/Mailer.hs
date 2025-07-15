@@ -69,7 +69,7 @@ sendMailingP dbConn (Mailing mailing_id subj content _ _ _) contacts = do
   env <- getAppEnv
   let contentU = changeImgTags (DS.pack content)
   send <- makeSender
-  let makeM = makeMail (senderName env) (senderName env) subj
+  let makeM = makeMail (senderName env) (senderEmail env) subj
   putStrLn "GONING TO START MAILING"
   let tryOneMailing c = do
         putStrLn $ "Will send to " ++ contactEmail c
