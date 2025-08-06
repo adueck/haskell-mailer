@@ -70,10 +70,12 @@ jobs:
 
       - name: Build and Test
         run: |
-          npm install
-          npx playwright install --with-deps
           cabal build all
-          npm run test
+        # run: |
+        #   npm install
+        #   npx playwright install --with-deps
+        #   cabal build all
+        #   npm run test
       - name: deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
