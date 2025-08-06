@@ -76,7 +76,7 @@ getContacts conn = do
 
 getMailings :: Connection -> IO [Mailing]
 getMailings conn = do
-  res <- query_ conn "SELECT * FROM mailings" :: IO [MailingOutput]
+  res <- query_ conn "SELECT * FROM mailings ORDER BY mailing_date DESC" :: IO [MailingOutput]
   return $ fmap toMailing res
 
 getContactById :: Connection -> UUID -> IO (Maybe Contact)
