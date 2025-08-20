@@ -53,7 +53,7 @@ webApp session store conn = scotty 8080 $ do
   middleware simpleCors
   middleware $ staticPolicy (noDots >-> addBase "static")
   middleware $ withSession store (fromString "session") defaultSetCookie session
-  --  middleware $ withAuth session
+  middleware $ withAuth session
   get "/login" (H.showLogin session)
   post "/login" (H.handleLogin session)
   post "/logout" (H.handleLogout session)

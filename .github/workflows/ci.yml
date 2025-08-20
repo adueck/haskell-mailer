@@ -81,7 +81,7 @@ jobs:
       # build binary and package up with static + email-templates
       # and then cope that over to the server
       - name: deploy
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
           port: ${{ secrets.PORT }}
