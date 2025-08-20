@@ -6,7 +6,7 @@ pkgs.mkShell {
     pkgs.haskell.compiler.ghc96 
     pkgs.haskellPackages.cabal-install
     pkgs.zlib
-    pkgs.postgresql # not sure if I need this too or just libpq
+    pkgs.postgresql
     pkgs.libpq
   ];
 }
