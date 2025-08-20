@@ -5,81 +5,82 @@ env:
   MYMAILER_DB_HOST: localhost
   MYMAILER_DB_PASSWORD: postgres
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  runhaskell:
+  ci:
     name: Build CI
     runs-on: ubuntu-latest
-    # services:
-    #   # postgres DB for testing
-    #   postgres:
-    #     image: postgres
-    #     env:
-    #       POSTGRES_PASSWORD: postgres
-    #       POSTGRES_DB: postgres
-    #     options: >-
-    #       --health-cmd pg_isready
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-    #     ports:
-    #       - 5432:5432
-    #   # mailpit for testing
-    #   mailpit:
-    #     image: axllent/mailpit
-    #     ports:
-    #       - 8025:8025
-    #       - 1025:1025
+    services:
+      # postgres DB for testing
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      # mailpit for testing
+      mailpit:
+        image: axllent/mailpit
+        ports:
+          - 8025:8025
+          - 1025:1025
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
-      # - uses: haskell-actions/setup@v2
-      #   id: setup
-      #   with:
-      #     ghc-version: "9.8.2"
-      #     cabal-version: "3.10.3.0"
-      # - name: Configure the build
-      #   run: |
-      #     cabal configure --enable-tests --enable-benchmarks --disable-documentation
-      #     cabal build all --dry-run
-      # - name: Restore cached dependencies
-      #   uses: actions/cache/restore@v4
-      #   id: cache
-      #   env:
-      #     key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
-      #   with:
-      #     path: ${{ steps.setup.outputs.cabal-store }}
-      #     key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-      #     restore-keys: ${{ env.key }}-
+      - uses: haskell-actions/setup@v2
+        id: setup
+        with:
+          ghc-version: "9.8.2"
+          cabal-version: "3.10.3.0"
+      - name: Configure the build
+        run: |
+          cabal configure --enable-tests --enable-benchmarks --disable-documentation
+          cabal build all --dry-run
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v4
+        id: cache
+        env:
+          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
 
-      # - name: Install dependencies
-      #   # If we had an exact cache hit, the dependencies will be up to date.
-      #   if: steps.cache.outputs.cache-hit != 'true'
-      #   run: cabal build all --only-dependencies
+      - name: Install dependencies
+        # If we had an exact cache hit, the dependencies will be up to date.
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cabal build all --only-dependencies
 
-      # # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
-      # - name: Save cached dependencies
-      #   uses: actions/cache/save@v4
-      #   # If we had an exact cache hit, trying to save the cache would error because of key clash.
-      #   if: steps.cache.outputs.cache-hit != 'true'
-      #   with:
-      #     path: ${{ steps.setup.outputs.cabal-store }}
-      #     key: ${{ steps.cache.outputs.cache-primary-key }}
+      # Cache dependencies already here, so that we do not have to rebuild them should the subsequent steps fail.
+      - name: Save cached dependencies
+        uses: actions/cache/save@v4
+        # If we had an exact cache hit, trying to save the cache would error because of key clash.
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
-      # - name: Build and Test
-      #   run: |
-      #     cabal build all
-      #     npm install
-      #     npx playwright install --with-deps
-      #     cabal build
-      #     chmod u+x init_db.sh
-      #     npm run test
-      # new deploy flow
-      # build binary and package up with static + email-templates
-      # and then cope that over to the server
+      - name: Build and Test
+        run: |
+          cabal build all
+          npm install
+          npx playwright install --with-deps
+          cabal build
+          chmod u+x init_db.sh
+          npm run test
       - name: deploy
         uses: appleboy/ssh-action@v1
         with:
@@ -88,9 +89,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            ls
-            # cd apps/live/haskell-mailer/
-            # git pull
-            # cabal build haskell-mailer
-            # cd ~
-            # pm2 restart haskell-mailer
+            cd apps/live/haskell-mailer/
+            git pull
+            cabal build haskell-mailer
+            pm2 restart haskell-mailer
