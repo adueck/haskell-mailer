@@ -14,7 +14,6 @@ module DB
     updateContact,
     updateNameEmailContact,
     updateMailing,
-    setupDB,
     markMailingPublished,
     makeDBConnection,
     getFirstMailing,
@@ -24,7 +23,6 @@ module DB
   )
 where
 
-import Control.Monad
 import Data.UUID.Types (UUID)
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Time
@@ -76,7 +74,7 @@ getContacts conn = do
 
 getMailings :: Connection -> IO [Mailing]
 getMailings conn = do
-  res <- query_ conn "SELECT * FROM mailings ORDER BY mailing_date DESC" :: IO [MailingOutput]
+  res <- query_ conn "SELECT * FROM mailings" :: IO [MailingOutput]
   return $ fmap toMailing res
 
 getContactById :: Connection -> UUID -> IO (Maybe Contact)
@@ -271,58 +269,4 @@ localPG = do
       }
 
 makeDBConnection :: IO Connection
-makeDBConnection = do
-  conn <- localPG >>= connect
-  DB.setupDB conn
-  return conn
-
-setupDB :: Connection -> IO ()
-setupDB conn = do
-  a :: [(String, String)] <-
-    query
-      conn
-      "SELECT schemaname, tablename FROM \
-      \ pg_tables WHERE tablename = ?"
-      (Only "contacts" :: Only String)
-  when (null a) $ do
-    _ <-
-      execute
-        conn
-        "CREATE TABLE IF NOT EXISTS contacts \
-        \ ( contact_id uuid DEFAULT gen_random_uuid() PRIMARY KEY, name VARCHAR(100) NOT NULL, \
-        \ email VARCHAR(100) NOT NULL, contact_group VARCHAR(100) NOT NULL, notes TEXT NOT NULL );"
-        ()
-    return ()
-  b :: [(String, String)] <-
-    query
-      conn
-      "SELECT schemaname, tablename FROM \
-      \ pg_tables WHERE tablename = ?"
-      (Only "mailings" :: Only String)
-  when (null b) $ do
-    _ <-
-      execute
-        conn
-        "CREATE TABLE IF NOT EXISTS mailings \
-        \ ( mailing_id uuid DEFAULT gen_random_uuid() PRIMARY KEY, subject VARCHAR(100) NOT NULL, \
-        \ content TEXT NOT NULL, created_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, \
-        \ updated_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, published BOOLEAN NOT NULL DEFAULT false );"
-        ()
-    return ()
-  c :: [(String, String)] <-
-    query
-      conn
-      "SELECT schemaname, tablename FROM \
-      \ pg_tables WHERE tablename = ?"
-      (Only "sends" :: Only String)
-  when (null c) $ do
-    _ <-
-      execute
-        conn
-        "CREATE TABLE IF NOT EXISTS sends \
-        \ ( send_id uuid DEFAULT gen_random_uuid() PRIMARY KEY, mailing_id uuid, contact_id uuid, \
-        \ email VARCHAR(100), send_error TEXT, sent_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, \
-        \ CONSTRAINT fk_mailing FOREIGN KEY (mailing_id) REFERENCES mailings(mailing_id) ON DELETE CASCADE, \
-        \ CONSTRAINT fk_contact FOREIGN KEY (contact_id) REFERENCES contacts(contact_id) ON DELETE CASCADE)"
-        ()
-    return ()
+makeDBConnection = localPG >>= connect

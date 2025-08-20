@@ -71,23 +71,21 @@ jobs:
       - name: Build and Test
         run: |
           cabal build all
-        # run: |
-        #   npm install
-        #   npx playwright install --with-deps
-        #   cabal build all
-        #   npm run test
-      - name: deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          port: ${{ secrets.PORT }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          script: |
-            cd apps/live/haskell-mailer/
-            git pull
-            cabal build haskell-mailer
-            cd ~
-            pm2 stop haskell-mailer
-            sleep 5
-            pm2 start haskell-mailer
+          npm install
+          npx playwright install --with-deps
+          cabal build all
+          npm run test
+      # pause deploy for naw
+      # - name: deploy
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     port: ${{ secrets.PORT }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     script: |
+      #       cd apps/live/haskell-mailer/
+      #       git pull
+      #       cabal build haskell-mailer
+      #       cd ~
+      #       pm2 restart haskell-mailer

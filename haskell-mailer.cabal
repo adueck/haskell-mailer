@@ -96,65 +96,9 @@ executable haskell-mailer
         http-types,
         wai-cors,
         wai-middleware-static,
-        websockets,
         warp,
         wai,
         wai-extra,
-        wai-websockets,
-        wai-session,
-        zenacy-html,
-        vault,
-        cookie,
-        time
-
-    -- Directories containing source files.
-    hs-source-dirs:   app
-
-    -- Base language which the package is written in.
-    default-language: GHC2021
-
-executable clean-db
-    -- Import common warning flags.
-    import:           warnings
-
-    -- .hs or .lhs file containing the Main module.
-    main-is:          DBClean.hs
-
-    -- Modules included in this executable, other than Main.
-    other-modules:  Types,
-        DB,
-        Mailer,
-        Views,
-        EnvBuddy
-
-    -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
-
-    -- Other library packages from which modules are imported.
-    build-depends:    base,
-        bytestring,
-        directory,
-        async,
-        filepath,
-        scotty,
-        postgresql-simple,
-        smtp-mail,
-        mime-mail,
-        text,
-        aeson,
-        blaze-html,
-        regex-compat,
-        uri-encode,
-        uuid,
-        uuid-types,
-        http-types,
-        wai-cors,
-        wai-middleware-static,
-        websockets,
-        warp,
-        wai,
-        wai-extra,
-        wai-websockets,
         wai-session,
         zenacy-html,
         vault,

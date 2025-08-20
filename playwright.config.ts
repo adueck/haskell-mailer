@@ -65,7 +65,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: [
     {
-      command: "cabal run clean-db && cabal run haskell-mailer",
+      command: "./init_db.sh && cabal run haskell-mailer",
       url: "http://127.0.0.1:8080",
       reuseExistingServer: true,
       stdout: "pipe",

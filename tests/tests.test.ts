@@ -4,11 +4,12 @@ import * as cheerio from "cheerio";
 import { stringify } from "csv-stringify/sync";
 import { parse } from "csv-parse/sync";
 import * as fs from "fs";
+import { fail } from "node:assert";
 
 test.describe.configure({ mode: "serial" });
 
 async function resetState() {
-  execSync("cabal run clean-db");
+  execSync("./init_db.sh");
   await fetch(`http://localhost:8025/api/v1/messages`, {
     method: "DELETE",
   });
@@ -53,11 +54,11 @@ test("add/update/delete contacts", async ({ page }) => {
   await page.getByRole("button", { name: "Delete Contact" }).click();
   await expect(page.getByRole("cell", { name: "Bill J" })).not.toBeVisible();
   await expect(
-    page.getByRole("cell", { name: "bill@bill.com" })
+    page.getByRole("cell", { name: "bill@bill.com" }),
   ).not.toBeVisible();
   await expect(page.getByRole("cell", { name: "friends" })).not.toBeVisible();
   await expect(
-    page.getByRole("cell", { name: "from school" })
+    page.getByRole("cell", { name: "from school" }),
   ).not.toBeVisible();
   await page.getByRole("link", { name: "Frank J" }).click();
   await page.locator('input[name="group"]').click();
@@ -73,7 +74,7 @@ test("add/update/delete contacts", async ({ page }) => {
   await expect(page.getByRole("cell", { name: "frank@guy.ca" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "co-workers" })).toBeVisible();
   await expect(
-    page.getByRole("cell", { name: "from accounting" })
+    page.getByRole("cell", { name: "from accounting" }),
   ).toBeVisible();
 });
 
@@ -176,14 +177,17 @@ test("create and send mailing", async ({ page }) => {
   const $ = cheerio.load(msg.HTML);
   // test user update of contact info
   const updateContactLink = $(`a:contains("update your contact info")`).attr(
-    "href"
+    "href",
   );
   const unsubscribeLink = $(`a:contains("No more updates please")`).attr(
-    "href"
+    "href",
   );
+  if (!updateContactLink) {
+    fail("update contact link not found");
+  }
   await page.goto(updateContactLink);
   await expect(
-    page.getByRole("heading", { name: "Update Contact Info" })
+    page.getByRole("heading", { name: "Update Contact Info" }),
   ).toBeVisible();
   await page.getByLabel("Name").click();
   await page.getByLabel("Name").fill("Bill J");
@@ -195,7 +199,7 @@ test("create and send mailing", async ({ page }) => {
   await page.locator('input[name="email"]').fill("bill@j.com");
   await page.getByRole("button", { name: "Update" }).click();
   await expect(
-    page.getByRole("heading", { name: "Your contact info has been" })
+    page.getByRole("heading", { name: "Your contact info has been" }),
   ).toBeVisible();
   await expect(page.getByText("Name: Bill J")).toBeVisible();
   await expect(page.getByText("Email: bill@j.com")).toBeVisible();
@@ -204,7 +208,7 @@ test("create and send mailing", async ({ page }) => {
   await page.getByLabel("Name").fill("Bill K");
   await page.getByRole("button", { name: "Update" }).click();
   await expect(
-    page.getByRole("heading", { name: "Your contact info has been" })
+    page.getByRole("heading", { name: "Your contact info has been" }),
   ).toBeVisible();
   await expect(page.getByText("Name: Bill K")).toBeVisible();
   await page.goto("http://localhost:8080/contacts");
@@ -212,17 +216,20 @@ test("create and send mailing", async ({ page }) => {
   await expect(page.getByRole("cell", { name: "Bill K" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "bill@j.com" })).toBeVisible();
   // also check that unsubscribe link works
+  if (!unsubscribeLink) {
+    fail("unsubscribe link not found");
+  }
   await page.goto(unsubscribeLink);
   await page.locator("#unsubscribe-box").check();
   await page.getByRole("button", { name: "Unsubscribe" }).click();
   await expect(
-    page.getByRole("heading", { name: "Unsubscribed" })
+    page.getByRole("heading", { name: "Unsubscribed" }),
   ).toBeVisible();
   await page.goto("http://localhost:8080/");
   await page.getByRole("link", { name: "Contacts" }).click();
   await expect(page.getByRole("cell", { name: "Bill K" })).not.toBeVisible();
   await expect(
-    page.getByRole("cell", { name: "bill@j.com" })
+    page.getByRole("cell", { name: "bill@j.com" }),
   ).not.toBeVisible();
 });
 

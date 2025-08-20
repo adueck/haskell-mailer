@@ -2,27 +2,21 @@
 
 module Main where
 
-import Control.Concurrent
-import Control.Monad (forever)
 import DB qualified
 import Data.String (fromString)
-import Data.Text qualified as Text
 import Data.Vault.Lazy qualified as Vault
 import Database.PostgreSQL.Simple
 import EnvBuddy (getAppEnv)
 import Handlers qualified as H
 import Network.HTTP.Types (status302)
 import Network.Wai qualified as Wai
-import Network.Wai.Handler.Warp qualified as Warp
-import Network.Wai.Handler.WebSockets qualified as WaiWs
 import Network.Wai.Middleware.Cors
 import Network.Wai.Middleware.Static
-import Network.Wai.Session (Session, withSession)
+import Network.Wai.Session (Session, SessionStore, withSession)
 import Network.Wai.Session.Map (mapStore_)
-import Network.WebSockets qualified as WS
 import Types
 import Web.Cookie
-import Web.Scotty as Sc (delete, get, middleware, post, scottyApp)
+import Web.Scotty
 
 -- TODO: Caching of cabal
 
@@ -31,37 +25,7 @@ main = do
   conn <- DB.makeDBConnection
   session <- Vault.newKey
   store <- mapStore_
-  let settings = Warp.setPort 8080 Warp.defaultSettings
-  sapp <- webApp session conn
-  putStrLn "Server running on 8080"
-  Warp.runSettings
-    settings
-    $ WaiWs.websocketsOr
-      WS.defaultConnectionOptions
-      wsapp
-      ( withSession
-          store
-          (fromString "session")
-          defaultSetCookie
-          session
-          sapp
-      )
-
-wsapp :: WS.ServerApp
-wsapp pending = do
-  conn <- WS.acceptRequest pending
-  -- (msg :: Text.Text) <- WS.receiveData conn
-  -- WS.sendTextData conn $ ("initial> " :: Text.Text) <> msg
-  forever $ do
-    WS.sendTextData conn ("loop data" :: Text.Text)
-    threadDelay $ 1 * 1000000
-
--- putText "ws connected"
--- conn <- WS.acceptRequest pending
--- WS.forkPingThread conn 30
-
--- (msg :: Text) <- WS.receiveData conn
--- WS.sendTextData conn $ ("initial> " :: Text) <> msg
+  webApp session store conn
 
 withAuth :: Vault.Key (Session IO String String) -> Wai.Middleware
 withAuth session app req respond = do
@@ -84,11 +48,12 @@ withAuth session app req respond = do
                 app req $ respond . Wai.mapResponseStatus (const status302) . Wai.mapResponseHeaders (\hs -> ("Location", "/login") : hs)
           Nothing -> app req respond
 
-webApp :: Vault.Key (Session IO String String) -> Connection -> IO Wai.Application
-webApp session conn = Sc.scottyApp $ do
+webApp :: Vault.Key (Session IO String String) -> SessionStore IO String String -> Connection -> IO ()
+webApp session store conn = scotty 8080 $ do
   middleware simpleCors
   middleware $ staticPolicy (noDots >-> addBase "static")
-  middleware $ withAuth session
+  middleware $ withSession store (fromString "session") defaultSetCookie session
+  --  middleware $ withAuth session
   get "/login" (H.showLogin session)
   post "/login" (H.handleLogin session)
   post "/logout" (H.handleLogout session)

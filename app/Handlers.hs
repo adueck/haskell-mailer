@@ -221,7 +221,6 @@ showContact conn = do
 
 showMailing :: Connection -> ActionM ()
 showMailing conn = do
-  liftIO $ putStrLn "Going to show mailing"
   _idS :: String <- pathParam "_id"
   case fromString _idS of
     Nothing -> redirect "/mailings"
