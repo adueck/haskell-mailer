@@ -9,7 +9,9 @@ import { fail } from "node:assert";
 test.describe.configure({ mode: "serial" });
 
 async function resetState() {
+  // clear DB
   execSync("./init_db.sh");
+  // clear mailtrap for testing
   await fetch(`http://localhost:8025/api/v1/messages`, {
     method: "DELETE",
   });
