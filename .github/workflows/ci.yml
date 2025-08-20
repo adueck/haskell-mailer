@@ -10,8 +10,8 @@ jobs:
   runhaskell:
     name: Build CI
     runs-on: ubuntu-latest
-    # postgres DB for testing
     services:
+      # postgres DB for testing
       postgres:
         image: postgres
         env:
@@ -24,6 +24,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      # mailpit for testing
       mailpit:
         image: axllent/mailpit
         ports:
@@ -73,8 +74,12 @@ jobs:
           cabal build all
           npm install
           npx playwright install --with-deps
-          cabal build all
+          cabal build
+          chmod u+x init_db.sh
           npm run test
+      # new deploy flow
+      # build binary and package up with static + email-templates
+      # and then cope that over to the server
       # pause deploy for naw
       # - name: deploy
       #   uses: appleboy/ssh-action@v1.0.3

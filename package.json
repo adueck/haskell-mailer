@@ -14,10 +14,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.45.3",
-    "@types/node": "^22.0.0",
-    "cheerio": "^1.0.0",
-    "csv-parse": "^5.5.6",
-    "csv-stringify": "^6.5.1"
+    "@playwright/test": "^1.54.2",
+    "@types/node": "^24.3.0",
+    "cheerio": "^1.1.2",
+    "csv-parse": "^6.1.0",
+    "csv-stringify": "^6.6.0"
   }
 }
