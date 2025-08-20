@@ -45,6 +45,7 @@ homePage :: [Mailing] -> ActionM ()
 homePage mailings = html $
   renderHtml $
     appTemplate "Mailings" "/" $ do
+      H.hr
       H.ul H.! A.class_ "list-group list-group-flush" $ do
         if null mailings
           then H.p "No mailings yet!"
