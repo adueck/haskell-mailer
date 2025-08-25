@@ -21,11 +21,7 @@ import Web.Scotty
 -- TODO: Caching of cabal
 
 main :: IO ()
-main = do
-  conn <- DB.makeDBConnection
-  session <- Vault.newKey
-  store <- mapStore_
-  webApp session store conn
+main = webApp <$> DB.makeDBConnection <*> mapStore_ <*> Vault.newKey
 
 withAuth :: Vault.Key (Session IO String String) -> Wai.Middleware
 withAuth session app req respond = do
