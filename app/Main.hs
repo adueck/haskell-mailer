@@ -59,6 +59,9 @@ webApp session store conn = scotty 8080 $ do
   post "/logout" (H.handleLogout session)
   -- Client-facing HTTP Handlers
   --  (web app)
+  -- TODO: Wrap these up into one ScottyM
+  -- Then combine that with a reader so we can just pass the 
+  -- conn as a reader env
   get "/" (H.showHome conn)
   get "/contacts" (H.indexContacts conn "")
   get "/upload-contacts" H.showUploadContacts
