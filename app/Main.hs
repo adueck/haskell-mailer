@@ -21,7 +21,7 @@ import Web.Scotty
 -- TODO: Caching of cabal
 
 main :: IO ()
-main = webApp <$> DB.makeDBConnection <*> mapStore_ <*> Vault.newKey
+main = webApp <$> DB.makeDBConnection <*> Vault.newKey <*> mapStore_
 
 withAuth :: Vault.Key (Session IO String String) -> Wai.Middleware
 withAuth session app req respond = do
@@ -44,8 +44,8 @@ withAuth session app req respond = do
                 app req $ respond . Wai.mapResponseStatus (const status302) . Wai.mapResponseHeaders (\hs -> ("Location", "/login") : hs)
           Nothing -> app req respond
 
-webApp :: Vault.Key (Session IO String String) -> SessionStore IO String String -> Connection -> IO ()
-webApp session store conn = scotty 8080 $ do
+webApp :: Connection -> Vault.Key (Session IO String String) -> SessionStore IO String String -> IO ()
+webApp conn session store = scotty 8080 $ do
   middleware simpleCors
   middleware $ staticPolicy (noDots >-> addBase "static")
   middleware $ withSession store (fromString "session") defaultSetCookie session
