@@ -25,7 +25,7 @@ main = do
   conn <- DB.makeDBConnection
   session <- Vault.newKey
   store <- mapStore_
-  webApp session store conn
+  webApp conn session store
 
 withAuth :: Vault.Key (Session IO String String) -> Wai.Middleware
 withAuth session app req respond = do
@@ -49,8 +49,8 @@ withAuth session app req respond = do
           Nothing -> app req respond
   where unsecuredPaths = ["change", "enough"] 
 
-webApp :: Vault.Key (Session IO String String) -> SessionStore IO String String -> Connection -> IO ()
-webApp session store conn = scotty 8080 $ do
+webApp :: Connection -> Vault.Key (Session IO String String) -> SessionStore IO String String -> IO ()
+webApp conn session store = scotty 8080 $ do
   middleware simpleCors
   middleware $ staticPolicy (noDots >-> addBase "static")
   middleware $ withSession store (fromString "session") defaultSetCookie session
@@ -60,6 +60,9 @@ webApp session store conn = scotty 8080 $ do
   post "/logout" (H.handleLogout session)
   -- Client-facing HTTP Handlers
   --  (web app)
+  -- TODO: Wrap these up into one ScottyM
+  -- Then combine that with a reader so we can just pass the 
+  -- conn as a reader env
   get "/" (H.showHome conn)
   get "/contacts" (H.indexContacts conn "")
   get "/upload-contacts" H.showUploadContacts
