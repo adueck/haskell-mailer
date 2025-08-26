@@ -30,7 +30,7 @@ main = do
 withAuth :: Vault.Key (Session IO String String) -> Wai.Middleware
 withAuth session app req respond = do
   -- no auth for routes where user changes their contact info
-  if "change" `elem` Wai.pathInfo req || "enough" `elem` Wai.pathInfo req
+  if any (`elem` Wai.pathInfo req) unsecuredPaths
     then do
       app req respond
     else do
@@ -47,6 +47,7 @@ withAuth session app req respond = do
               else
                 app req $ respond . Wai.mapResponseStatus (const status302) . Wai.mapResponseHeaders (\hs -> ("Location", "/login") : hs)
           Nothing -> app req respond
+  where unsecuredPaths = ["change", "enough"] 
 
 webApp :: Vault.Key (Session IO String String) -> SessionStore IO String String -> Connection -> IO ()
 webApp session store conn = scotty 8080 $ do
