@@ -47,7 +47,8 @@ withAuth session app req respond = do
               else
                 app req $ respond . Wai.mapResponseStatus (const status302) . Wai.mapResponseHeaders (\hs -> ("Location", "/login") : hs)
           Nothing -> app req respond
-  where unsecuredPaths = ["change", "enough"] 
+  where
+    unsecuredPaths = ["change", "enough"]
 
 webApp :: Connection -> Vault.Key (Session IO String String) -> SessionStore IO String String -> IO ()
 webApp conn session store = scotty 8080 $ do
@@ -61,7 +62,7 @@ webApp conn session store = scotty 8080 $ do
   -- Client-facing HTTP Handlers
   --  (web app)
   -- TODO: Wrap these up into one ScottyM
-  -- Then combine that with a reader so we can just pass the 
+  -- Then combine that with a reader so we can just pass the
   -- conn as a reader env
   get "/" (H.showHome conn)
   get "/contacts" (H.indexContacts conn "")

@@ -69,6 +69,7 @@ handleUpload = do
     Just (fName, fContent) -> do
       liftIO $ createDirectoryIfMissing True (uploadBasePath </> mailing_id)
       liftIO $ B.writeFile (uploadBasePath </> mailing_id </> fName) fContent
+      liftIO $ putStrLn ("Saved file " ++ fName)
       json $ object ["url" .= (urlEnv env ++ "/images/" ++ mailing_id ++ "/" ++ fName)]
 
 handleUploadContacts :: Connection -> ActionM ()
