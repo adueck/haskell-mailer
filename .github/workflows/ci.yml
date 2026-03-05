@@ -14,26 +14,26 @@ jobs:
   ci:
     name: Build CI
     runs-on: ubuntu-latest
-    services:
+    # services:
       # postgres DB for testing
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      # mailpit for testing
-      mailpit:
-        image: axllent/mailpit
-        ports:
-          - 8025:8025
-          - 1025:1025
+      # postgres:
+      #   image: postgres
+      #   env:
+      #     POSTGRES_PASSWORD: postgres
+      #     POSTGRES_DB: postgres
+      #   options: >-
+      #     --health-cmd pg_isready
+      #     --health-interval 10s
+      #     --health-timeout 5s
+      #     --health-retries 5
+      #   ports:
+      #     - 5432:5432
+      # # mailpit for testing
+      # mailpit:
+      #   image: axllent/mailpit
+      #   ports:
+      #     - 8025:8025
+      #     - 1025:1025
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

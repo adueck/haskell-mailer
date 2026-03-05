@@ -62,6 +62,7 @@ uploadBasePath = "static" </> "images"
 handleUpload :: ActionM ()
 handleUpload = do
   mailing_id :: String <- pathParam "mailing_id"
+  liftIO $ putStrLn "Getting File Upload"
   env <- liftIO getAppEnv
   fRes <- getFileFromForm
   case fRes of
